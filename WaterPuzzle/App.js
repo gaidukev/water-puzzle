@@ -1,36 +1,135 @@
+
+
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList } from 'react-native';
+import { StyleSheet, Text, View, FlatList, ScrollView, TouchableWithoutFeedback, TouchableHighlight } from 'react-native';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+import { useState } from 'react';
+
 import WaterFlask from './components/WaterFlask';
+
+function getTopMostColor(flaskColors){
+  for (let i = 0; i < flaskColors.length; i++){
+    if (flaskColors[i] != ""){
+      return flaskColors[i]
+    }
+  }
+  return ""
+}
+
+function getTopMostColorIndex(flaskColors) {
+  for (let i = 0; i < flaskColors.length; i++) {
+    if (flaskColors[i] != "") {
+      return i
+    }
+  }
+  return -1
+}
+
+function hasSpace(colors) {
+  if (colors[0] == ""){
+    return true
+  }
+  return false
+}
+
+function isTransferrable(receiverFlask, giverFlask){
+  const topColorReceiver = getTopMostColor(receiverFlask);
+  const topColorGiver = getTopMostColor(giverFlask);
+  if ((topColorReceiver == "") || 
+        ((topColorGiver == topColorReceiver) && 
+        (topColorGiver != "") && 
+        hasSpace(receiverFlask))) {
+    return true
+  } else {
+    return false
+  }
+}
+
 
 export default function App() {
   const possibleColors = ["#EDD382", "#61185e", "#D72638", "#9882AC", "#C17817", "#2E6171", "#BAA898"]
 
-  const colorConfigs = [["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
+  const initialColorConfigs = [["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
   ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
   ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
-  ["#EDD382", "#61185e", "#D72638", "#9882AC"]]
+  ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["", "", "", ""], ["", "", "", ""]]
+
+  const [colorConfigs, setColorConfigs] = useState(initialColorConfigs);
+
+  const [selectedVialIndex, setSelectedVialIndex] = useState(-1)
   return (
-    <FlatList data={colorConfigs} numColumns={3}
-              renderItem={( item ) => {
-                return <WaterFlask colors={item}/>
-              }}
-              keyExtractor={(item, index) => index} />
-      // <WaterFlask colors={["#EDD382", "#61185e", "#D72638", "#9882AC"]}/>
-      // <WaterFlask colors={["#EDD382", "#61185e", "#D72638", "#9882AC"]}/>
-      // <WaterFlask colors={["#EDD382", "#61185e", "#D72638", "#9882AC"]}/>
-      // <WaterFlask colors={["#EDD382", "#61185e", "#D72638", "#9882AC"]}/>
-      // <WaterFlask colors={["#EDD382", "#61185e", "#D72638", "#9882AC"]}/>
-      // <WaterFlask colors={["#EDD382", "#61185e", "#D72638", "#9882AC"]}/>
-      // <WaterFlask colors={["#EDD382", "#61185e", "#D72638", "#9882AC"]}/>
+    <View>
+      <StatusBar />
+      <FlatList 
+        data={colorConfigs} 
+        numColumns={5} 
+        contentContainerStyle={styles.container}
+      renderItem={( item ) => {
+        return <TouchableHighlight  underlayColor={"beige"} 
+        onPress = {(e) => {
+          const currentVialIndex = item["index"]
+          const sameVial = currentVialIndex == selectedVialIndex
+          console.log("Press detected! currentVialIndex, sameVial: ", currentVialIndex, sameVial);
+          console.log(`Might be running isTransferrable on item["item"] ${item["item"]} and colorConfigs[selectedVialIndex] ${colorConfigs[selectedVialIndex]} where selectedVialIndex is ${selectedVialIndex}`)
+          if (sameVial){
+            console.log("Same vial is true -- setting selectedVialIndex to -1")
+            setSelectedVialIndex(-1)
+          } else if (selectedVialIndex != -1 && isTransferrable(item["item"], colorConfigs[selectedVialIndex])) {
+
+            const transferredColor = getTopMostColor(item["item"])
+            setColorConfigs(colorConfigs.map((colorArray, index) => {
+              if (selectedVialIndex == index) { //giver flask
+                const topMostColorIndex = getTopMostColorIndex(colorArray)
+                return colorArray.map((el, colorIndex) => {
+                  if (colorIndex == topMostColorIndex) {
+                    return ""
+                  }
+                  else {
+                    return el
+                  }
+                })
+              } else if (index == currentVialIndex) { //receiver flask
+                const topMostColorIndex = getTopMostColorIndex(colorArray)
+                return colorArray.map((el, colorIndex) => {
+                  if (colorIndex == (topMostColorIndex - 1)){
+                    return transferredColor
+                  } else {
+                    return el
+                  }
+                })
+              } else {
+                console.log("Spreading item: ", )
+                return [...colorArray]
+              }
+              })
+            )
+            setSelectedVialIndex(-1)
+          } else {
+            setSelectedVialIndex(item["index"])
+          }
+          console.log("color configs: ", colorConfigs)
+        }}>
+          <WaterFlask 
+                isSelected={selectedVialIndex == item["index"]} 
+                colors={item} 
+              />
+
+        </TouchableHighlight>
+        
+      }}
+      keyExtractor={(item, index) => index} />
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
+    margin: "10",
+    backgroundColor: 'beige',
+    height: "100%",
+    width: "100%",
     display: "flex",
-    flexWrap: "wrap",
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: "center",
+    alignItems: "center"
   },
 });

@@ -1,11 +1,18 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
+import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
 
-export default function WaterFlask({ colors }){
+
+
+
+export default function WaterFlask({ isSelected, colors }){
     console.log("Colors: ", colors)
+    console.log("Selected: ", isSelected)
     colors = colors.item;
+
+    const vialStyle = isSelected ? [styles.vial, styles.highlighted] : [styles.vial]
     return(
-        <View style={styles.vial}>
+        <View style={vialStyle} >
             <View style={[styles.water, {backgroundColor: colors[0]}]}/>
             <View style={[styles.water, {backgroundColor: colors[1]}]}/>
             <View style={[styles.water, {backgroundColor: colors[2]}]}/>
@@ -17,24 +24,32 @@ export default function WaterFlask({ colors }){
 const styles = StyleSheet.create({
     
     waterBottom: {
-        borderBottomLeftRadius: 15,
-        borderBottomRightRadius: 15,
+        borderBottomLeftRadius: 8,
+        borderBottomRightRadius: 8,
         borderTopLeftRadius: 0,
         borderTopRightRadius: 0
     },
 
     water: {
-        height: 40
+        height: 30
+    },
+
+    highlighted: {
+        marginTop: -10
     },
 
     vial: {
-        paddingTop: 30,
-        height: 200,
-        width: 70,
+        marginTop: 10,
+        marginBottom: 20,
+        marginLeft: 10,
+        marginRight: 10,
+        paddingTop: 20,
+        height: 150,
+        width: 50,
         borderColor: "black",
         borderWidth: 5,
-        borderBottomLeftRadius: 20,
-        borderBottomRightRadius: 20,
+        borderBottomLeftRadius: 15,
+        borderBottomRightRadius: 15,
         borderTopLeftRadius: 0,
         borderTopRightRadius: 0
     }
