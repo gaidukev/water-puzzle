@@ -16,21 +16,23 @@ function getTopMostColor(flaskColors){
   return ""
 }
 
-function isEmpty(flaskColors) {
-  return flaskColors[3] == ""
-}
 
 function getTopMostColorIndex(flaskColors) {
-  if (!isEmpty(flaskColors)){
-    for (let i = 0; i < flaskColors.length; i++) {
-      if (flaskColors[i] != "") {
-        return i
-      }
+  for (let i = 0; i < flaskColors.length; i++) {
+    if (flaskColors[i] != "") {
+      return i
     }
-    return -1
-  } else {
-    return 3
   }
+  return -1
+  } 
+
+function getLowestAvailableSpot(flaskColors) {
+  for (let i = 3; i >= 0; i--){
+    if (flaskColors[i] == "") {
+      return i
+    }
+  }
+  return -1
 }
 
 function hasSpace(colors) {
@@ -98,7 +100,7 @@ export default function App() {
                   }
                 })
               } else if (index == currentVialIndex) { //receiver flask
-                const topMostColorIndex = getTopMostColorIndex(colorArray)
+                const topMostColorIndex = getLowestAvailableSpot(colorArray)
                 return colorArray.map((el, colorIndex) => {
                   console.log("Color index: ", colorIndex, "topmostColorIndex: ", topMostColorIndex, "transferred color: ", transferredColor)
                   if (colorIndex == (topMostColorIndex)){
