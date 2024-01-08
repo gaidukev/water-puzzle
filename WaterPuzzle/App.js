@@ -16,13 +16,21 @@ function getTopMostColor(flaskColors){
   return ""
 }
 
+function isEmpty(flaskColors) {
+  return flaskColors[3] == ""
+}
+
 function getTopMostColorIndex(flaskColors) {
-  for (let i = 0; i < flaskColors.length; i++) {
-    if (flaskColors[i] != "") {
-      return i
+  if (!isEmpty(flaskColors)){
+    for (let i = 0; i < flaskColors.length; i++) {
+      if (flaskColors[i] != "") {
+        return i
+      }
     }
+    return -1
+  } else {
+    return 3
   }
-  return -1
 }
 
 function hasSpace(colors) {
@@ -55,8 +63,10 @@ export default function App() {
   ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["", "", "", ""], ["", "", "", ""]]
 
   const [colorConfigs, setColorConfigs] = useState(initialColorConfigs);
-
+  const [giverColor, setGiverColor] = useState("");
   const [selectedVialIndex, setSelectedVialIndex] = useState(-1)
+
+
   return (
     <View>
       <StatusBar />
@@ -65,19 +75,18 @@ export default function App() {
         numColumns={5} 
         contentContainerStyle={styles.container}
       renderItem={( item ) => {
+        const itemColors = item["item"] === undefined ? item: item["item"]
         return <TouchableHighlight  underlayColor={"beige"} 
         onPress = {(e) => {
           const currentVialIndex = item["index"]
           const sameVial = currentVialIndex == selectedVialIndex
-          console.log("Press detected! currentVialIndex, sameVial: ", currentVialIndex, sameVial);
-          console.log(`Might be running isTransferrable on item["item"] ${item["item"]} and colorConfigs[selectedVialIndex] ${colorConfigs[selectedVialIndex]} where selectedVialIndex is ${selectedVialIndex}`)
           if (sameVial){
-            console.log("Same vial is true -- setting selectedVialIndex to -1")
             setSelectedVialIndex(-1)
           } else if (selectedVialIndex != -1 && isTransferrable(item["item"], colorConfigs[selectedVialIndex])) {
 
-            const transferredColor = getTopMostColor(item["item"])
-            setColorConfigs(colorConfigs.map((colorArray, index) => {
+            const transferredColor = getTopMostColor(giverColor)
+            console.log("Transferred color: ", transferredColor, "giver color: ", giverColor, item['item'])
+            newColorConfigs = colorConfigs.map((colorArray, index) => {
               if (selectedVialIndex == index) { //giver flask
                 const topMostColorIndex = getTopMostColorIndex(colorArray)
                 return colorArray.map((el, colorIndex) => {
@@ -91,27 +100,31 @@ export default function App() {
               } else if (index == currentVialIndex) { //receiver flask
                 const topMostColorIndex = getTopMostColorIndex(colorArray)
                 return colorArray.map((el, colorIndex) => {
-                  if (colorIndex == (topMostColorIndex - 1)){
-                    return transferredColor
+                  console.log("Color index: ", colorIndex, "topmostColorIndex: ", topMostColorIndex, "transferred color: ", transferredColor)
+                  if (colorIndex == (topMostColorIndex)){
+                    console.log("Color Index: ", colorIndex, "returning: ", transferredColor)
+                    return getTopMostColor(giverColor)
                   } else {
                     return el
                   }
                 })
               } else {
-                console.log("Spreading item: ", )
                 return [...colorArray]
               }
               })
-            )
+            setColorConfigs(newColorConfigs)
             setSelectedVialIndex(-1)
           } else {
             setSelectedVialIndex(item["index"])
+            setGiverColor(item["item"])
+
           }
           console.log("color configs: ", colorConfigs)
-        }}>
+        }
+        }>
           <WaterFlask 
                 isSelected={selectedVialIndex == item["index"]} 
-                colors={item} 
+                colors={itemColors} 
               />
 
         </TouchableHighlight>

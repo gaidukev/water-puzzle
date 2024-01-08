@@ -6,17 +6,15 @@ import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-nativ
 
 
 export default function WaterFlask({ isSelected, colors }){
-    console.log("Colors: ", colors)
-    console.log("Selected: ", isSelected)
-    colors = colors.item;
+    //colors = colors.item;
 
     const vialStyle = isSelected ? [styles.vial, styles.highlighted] : [styles.vial]
     return(
         <View style={vialStyle} >
-            <View style={[styles.water, {backgroundColor: colors[0]}]}/>
-            <View style={[styles.water, {backgroundColor: colors[1]}]}/>
-            <View style={[styles.water, {backgroundColor: colors[2]}]}/>
-            <View style={[styles.water, {backgroundColor: colors[3]}, styles.waterBottom]}/>
+            <View style={[styles.water, colors[0] != "" ? {backgroundColor: colors[0]} : {backgroundColor: null}]}/>
+            <View style={[styles.water, colors[1] != "" ? {backgroundColor: colors[1]} : {backgroundColor: null}]}/>
+            <View style={[styles.water, colors[2] != "" ? {backgroundColor: colors[2]} : {backgroundColor: null}]}/>
+            <View style={[styles.water, colors[3] != "" ? {backgroundColor: colors[3]} : {backgroundColor: null}, styles.waterBottom]}/>
         </View>
     )
 }
