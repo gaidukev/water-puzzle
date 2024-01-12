@@ -1,9 +1,9 @@
 
 
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, ScrollView, TouchableWithoutFeedback, TouchableHighlight } from 'react-native';
-import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
+import { StyleSheet, Text, View, FlatList, TouchableHighlight } from 'react-native';
 import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import WaterFlask from './components/WaterFlask';
 
@@ -55,6 +55,40 @@ function isTransferrable(receiverFlask, giverFlask){
   }
 }
 
+function isGiverFlask(currentIndex, giverIndex){
+  return currentIndex == giverIndex
+}
+
+function isReceiverFlask(currentIndex, receiverIndex){
+  return receiverIndex == currentIndex
+}
+
+function isValidTransfer(selectedVialIndex, currentItemContents, giverIndex){
+  return selectedVialIndex != -1 && isTransferrable(currentItemContents, giverIndex)
+}
+
+function getGiverBeakerColors(colorArray){
+  const topMostColorIndex = getTopMostColorIndex(colorArray)
+  return colorArray.map((el, colorIndex) => {
+    if (colorIndex == topMostColorIndex) {
+      return ""
+    }
+    else {
+      return el
+    }
+  })
+}
+
+function getReceiverBeakerColors(colorArray, giverColor){
+  const topMostColorIndex = getLowestAvailableSpot(colorArray)
+  return colorArray.map((el, colorIndex) => {
+    if (colorIndex == (topMostColorIndex)){
+      return getTopMostColor(giverColor)
+    } else {
+      return el
+    }
+  })
+}
 
 export default function App() {
   const possibleColors = ["#EDD382", "#61185e", "#D72638", "#9882AC", "#C17817", "#2E6171", "#BAA898"]
@@ -84,32 +118,15 @@ export default function App() {
           const sameVial = currentVialIndex == selectedVialIndex
           if (sameVial){
             setSelectedVialIndex(-1)
-          } else if (selectedVialIndex != -1 && isTransferrable(item["item"], colorConfigs[selectedVialIndex])) {
+          } else if (isValidTransfer(selectedVialIndex, item["item"], colorConfigs[selectedVialIndex])) {
 
-            const transferredColor = getTopMostColor(giverColor)
-            console.log("Transferred color: ", transferredColor, "giver color: ", giverColor, item['item'])
             newColorConfigs = colorConfigs.map((colorArray, index) => {
-              if (selectedVialIndex == index) { //giver flask
-                const topMostColorIndex = getTopMostColorIndex(colorArray)
-                return colorArray.map((el, colorIndex) => {
-                  if (colorIndex == topMostColorIndex) {
-                    return ""
-                  }
-                  else {
-                    return el
-                  }
-                })
-              } else if (index == currentVialIndex) { //receiver flask
-                const topMostColorIndex = getLowestAvailableSpot(colorArray)
-                return colorArray.map((el, colorIndex) => {
-                  console.log("Color index: ", colorIndex, "topmostColorIndex: ", topMostColorIndex, "transferred color: ", transferredColor)
-                  if (colorIndex == (topMostColorIndex)){
-                    console.log("Color Index: ", colorIndex, "returning: ", transferredColor)
-                    return getTopMostColor(giverColor)
-                  } else {
-                    return el
-                  }
-                })
+              if (isGiverFlask(index, selectedVialIndex)) {
+                return getGiverBeakerColors(colorArray)
+
+              } else if (isReceiverFlask(index, currentVialIndex)) {
+                return getReceiverBeakerColors(colorArray, giverColor)
+                
               } else {
                 return [...colorArray]
               }
@@ -121,7 +138,6 @@ export default function App() {
             setGiverColor(item["item"])
 
           }
-          console.log("color configs: ", colorConfigs)
         }
         }>
           <WaterFlask 

@@ -1,13 +1,7 @@
 import React from 'react';
 import {StyleSheet, View, Text} from 'react-native';
-import {widthPercentageToDP as wp, heightPercentageToDP as hp} from 'react-native-responsive-screen';
-
-
-
 
 export default function WaterFlask({ isSelected, colors }){
-    //colors = colors.item;
-
     const vialStyle = isSelected ? [styles.vial, styles.highlighted] : [styles.vial]
     return(
         <View style={vialStyle} >
