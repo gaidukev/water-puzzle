@@ -65,14 +65,38 @@ class Beaker{
     getContent(){
         return this.content
     }
+
+    isEmpty(){
+        return this.#getTopMostNonEmptyIndex() != -1
+    }
+
+    isFull(){
+        return this.#getBottomMostEmptyIndex() != -1
+    }
 }
 
 function pickRandomGiver(beakers){
-    
+    let found = false
+    let selectedBeaker;
+    while(!found){
+        selectedBeaker = beakers[Math.floor(Math.random()*beakers.length)];
+        if (!selectedBeaker.isEmpty()){
+            found = true
+        }
+    }
+    return selectedBeaker;
 }
 
 function pickRandomReceiver(beakers){
-
+    let found = false;
+    let selectedBeaker;
+    while(!found){
+        selectedBeaker = beakers[Math.floor(Math.random() * beakers.length)];
+        if (!selectedBeaker.isFull()){
+            found = true;
+        }
+    }
+    return selectedBeaker;
 }
 
 /**
