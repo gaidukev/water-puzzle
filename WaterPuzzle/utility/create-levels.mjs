@@ -1,4 +1,6 @@
-//import AsyncStorage from '@react-native-async-storage/async-storage';
+import pkg from '@react-native-async-storage/async-storage';
+import * as fs from "fs"
+const AsyncStorage = pkg.default
 class Beaker{
 
     getBeaker(color){
@@ -123,6 +125,29 @@ function emptyOneBeaker(colorConfig){
     return colorConfig;
 }
 
+function moveEmptyToEnd(colorConfigs){
+    const indexFirstEmpty = colorConfigs.findIndex((el) => JSON.stringify(el) == JSON.stringify(["", "", "", ""]))
+
+    if (indexFirstEmpty != (colorConfigs.length - 2)){
+        const replacementIndex = JSON.stringify(colorConfigs[colorConfigs.length - 1]) == JSON.stringify(["", "", "", ""]) ? colorConfigs.length - 2 : colorConfigs.length - 1
+        
+        let replacementIndexValue = colorConfigs[replacementIndex];
+        colorConfigs[replacementIndex] = ["", "", "", ""]
+        colorConfigs[indexFirstEmpty] = replacementIndexValue
+        if (colorConfigs[colorConfigs.length - 2] != ["", "", "", ""]){
+            const indexSecondEmpty = colorConfigs.findIndex((el) => JSON.stringify(el) == JSON.stringify(["", "", "", ""]))
+
+            replacementIndexValue = colorConfigs[colorConfigs.length - 2]
+            colorConfigs[indexSecondEmpty] = replacementIndexValue;
+            colorConfigs[colorConfigs.length - 2] = ["", "", "", ""]
+        }
+        
+    }
+    
+
+    return colorConfigs
+}
+
 /**
  * 
  * @param {Array.<string>} colors Specifies all the colors in the level, as hex values.
@@ -160,7 +185,11 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
         currentCountEmpty = countEmptyBeakers(colorConfigs)
     }
 
-    return colorConfigs.map((el) => el.getContent())
+    colorConfigs = colorConfigs.map((el) => el.getContent());
+
+    console.log("Color configs: ", colorConfigs)
+
+    return moveEmptyToEnd(colorConfigs);
 }
 
 // async function storeData(levelid, initialColorConfig) {
@@ -180,8 +209,14 @@ function generateLevels(numLevels) {
 
     for (let i = 0; i < numLevels; i++){
         const colorConfigs = generateColorConfig(colors, 2, 150)
-        console.log("Color configs!", colorConfigs)
+        // storeData(i, colors)
+        console.log("Color configs! ", colorConfigs)
+        fs.writeFile("levels/Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
+            if (err){
+                console.error(err)
+            }
+        })
     }
 }
 
-generateLevels(5)
+generateLevels(15)
