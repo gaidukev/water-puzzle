@@ -90,13 +90,43 @@ function getReceiverBeakerColors(colorArray, giverColor){
   })
 }
 
-export default function App() {
-  const possibleColors = ["#EDD382", "#61185e", "#D72638", "#9882AC", "#C17817", "#2E6171", "#BAA898"]
+const setLevel = async (currentLevel) => {
+  try {
+    await AsyncStorage.setItem("current-level", currentLevel);
+  } catch (e) {
+    console.error(e)
+  }
+}
 
-  const initialColorConfigs = [["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
-  ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
-  ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
-  ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["", "", "", ""], ["", "", "", ""]]
+const getLevel = async () => {
+  try {
+    const level = await AsyncStorage.getItem("current-level");
+    return level
+  } catch (e) {
+    console.error(e)
+  }
+}
+
+function getLevelData(level) {
+  return require(`./levels/Level ${String(level)}.json`)
+
+}
+
+export default function App() {
+  let currentLevel = getLevel()
+  if (currentLevel == null) {
+    currentLevel = 0
+  }
+  currentLevel = 0
+
+  const initialColorConfigs = getLevelData(currentLevel)
+
+  //const possibleColors = ["#EDD382", "#61185e", "#D72638", "#9882AC", "#C17817", "#2E6171", "#BAA898"]
+
+  // const initialColorConfigs = [["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
+  // ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
+  // ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
+  // ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["", "", "", ""], ["", "", "", ""]]
 
   const [colorConfigs, setColorConfigs] = useState(initialColorConfigs);
   const [giverColor, setGiverColor] = useState("");
@@ -120,7 +150,7 @@ export default function App() {
             setSelectedVialIndex(-1)
           } else if (isValidTransfer(selectedVialIndex, item["item"], colorConfigs[selectedVialIndex])) {
 
-            newColorConfigs = colorConfigs.map((colorArray, index) => {
+            let newColorConfigs = colorConfigs.map((colorArray, index) => {
               if (isGiverFlask(index, selectedVialIndex)) {
                 return getGiverBeakerColors(colorArray)
 
