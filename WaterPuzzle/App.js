@@ -1,5 +1,3 @@
-
-
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View, FlatList, TouchableHighlight } from 'react-native';
 import { useState } from 'react';
@@ -67,10 +65,12 @@ function isValidTransfer(selectedVialIndex, currentItemContents, giverIndex){
   return selectedVialIndex != -1 && isTransferrable(currentItemContents, giverIndex)
 }
 
-function getGiverBeakerColors(colorArray){
+function getGiverBeakerColors(colorArray, numberColorsTransferred){
   const topMostColorIndex = getTopMostColorIndex(colorArray)
+  console.log("Get Giver Beaker Colors, numColorsTransferred: ", numberColorsTransferred, "topMostColorIndex", topMostColorIndex)
+
   return colorArray.map((el, colorIndex) => {
-    if (colorIndex == topMostColorIndex) {
+    if (colorIndex == topMostColorIndex || colorIndex < (topMostColorIndex + numberColorsTransferred)) {
       return ""
     }
     else {
@@ -79,16 +79,27 @@ function getGiverBeakerColors(colorArray){
   })
 }
 
-function getReceiverBeakerColors(colorArray, giverColor){
-  const topMostColorIndex = getLowestAvailableSpot(colorArray)
+function satisfiesLow(currentIndex, lowestAvailable, numberColorsTransferred){
+  return currentIndex <= lowestAvailable
+}
+
+function satisfiesHigh(currentIndex, lowestAvailable, numberColorsTransferred){
+  const upperBound = lowestAvailable - numberColorsTransferred + 1;
+  return currentIndex >= upperBound;
+}
+
+function getReceiverBeakerColors(colorArray, giverColor, numberColorsTransferred){
+  const lowestAvailableSpotIndex = getLowestAvailableSpot(colorArray)
   return colorArray.map((el, colorIndex) => {
-    if (colorIndex == (topMostColorIndex)){
+    if (satisfiesLow(colorIndex, lowestAvailableSpotIndex, numberColorsTransferred) && satisfiesHigh(colorIndex, lowestAvailableSpotIndex, numberColorsTransferred)){
       return getTopMostColor(giverColor)
     } else {
       return el
     }
   })
 }
+
+
 
 const setLevel = async (currentLevel) => {
   try {
@@ -112,6 +123,31 @@ function getLevelData(level) {
 
 }
 
+function countTopColor(colors){
+  let topColor; 
+  let topColorIndex;
+  let count = 0;
+  for (let i = 0; i < 3; i++){
+    if (colors[i] != "" && topColor === undefined) {
+      topColor = colors[i]
+      count++;
+    } else if (colors[i] == topColor){
+      count++
+    }
+  }
+  return count;
+}
+
+function countEmpty(colors){
+  let count = 0;
+  for (let i = 0; i < 4; i++){
+    if (colors[i] == ""){
+      count++;
+    }
+  }
+  return count;
+}
+
 export default function App() {
   let currentLevel = getLevel()
   if (currentLevel == null) {
@@ -120,13 +156,6 @@ export default function App() {
   currentLevel = 0
 
   const initialColorConfigs = getLevelData(currentLevel)
-
-  //const possibleColors = ["#EDD382", "#61185e", "#D72638", "#9882AC", "#C17817", "#2E6171", "#BAA898"]
-
-  // const initialColorConfigs = [["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
-  // ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
-  // ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["#EDD382", "#61185e", "#D72638", "#9882AC"],
-  // ["#EDD382", "#61185e", "#D72638", "#9882AC"], ["", "", "", ""], ["", "", "", ""]]
 
   const [colorConfigs, setColorConfigs] = useState(initialColorConfigs);
   const [giverColor, setGiverColor] = useState("");
@@ -150,12 +179,18 @@ export default function App() {
             setSelectedVialIndex(-1)
           } else if (isValidTransfer(selectedVialIndex, item["item"], colorConfigs[selectedVialIndex])) {
 
+            const countOfTopColorGiver = countTopColor(giverColor);
+            const countOfTopEmptyReceiver = countEmpty(itemColors);
+
+            const numberColorsTransferred = Math.min(countOfTopColorGiver, countOfTopEmptyReceiver)
+            console.log("Number of colors transferred: ", numberColorsTransferred, "Count of Top Color Giver: ", countOfTopColorGiver, "count of top empty receiver: ", countOfTopEmptyReceiver)
+
             let newColorConfigs = colorConfigs.map((colorArray, index) => {
               if (isGiverFlask(index, selectedVialIndex)) {
-                return getGiverBeakerColors(colorArray)
+                return getGiverBeakerColors(colorArray, numberColorsTransferred)
 
               } else if (isReceiverFlask(index, currentVialIndex)) {
-                return getReceiverBeakerColors(colorArray, giverColor)
+                return getReceiverBeakerColors(colorArray, giverColor, numberColorsTransferred)
                 
               } else {
                 return [...colorArray]
