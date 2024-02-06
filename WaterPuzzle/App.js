@@ -67,7 +67,6 @@ function isValidTransfer(selectedVialIndex, currentItemContents, giverIndex){
 
 function getGiverBeakerColors(colorArray, numberColorsTransferred){
   const topMostColorIndex = getTopMostColorIndex(colorArray)
-  console.log("Get Giver Beaker Colors, numColorsTransferred: ", numberColorsTransferred, "topMostColorIndex", topMostColorIndex)
 
   return colorArray.map((el, colorIndex) => {
     if (colorIndex == topMostColorIndex || colorIndex < (topMostColorIndex + numberColorsTransferred)) {
@@ -125,14 +124,16 @@ function getLevelData(level) {
 
 function countTopColor(colors){
   let topColor; 
-  let topColorIndex;
+  let finished = false;
   let count = 0;
-  for (let i = 0; i < 3; i++){
+  for (let i = 0; i < 4; i++){
     if (colors[i] != "" && topColor === undefined) {
       topColor = colors[i]
       count++;
-    } else if (colors[i] == topColor){
+    } else if (colors[i] == topColor && (!finished)){
       count++
+    } else if (colors[i] != topColor && !finished && topColor != undefined){
+      finished = true
     }
   }
   return count;
@@ -148,6 +149,18 @@ function countEmpty(colors){
   return count;
 }
 
+function checkWin(colorConfigs){
+  for(let config of colorConfigs){
+    const topElement = config[0]
+    for (let i = 1; i < 4; i++){
+      if(config[i] != topElement){
+        return false
+      }
+    }
+  }
+  return true
+}
+
 export default function App() {
   let currentLevel = getLevel()
   if (currentLevel == null) {
@@ -160,7 +173,7 @@ export default function App() {
   const [colorConfigs, setColorConfigs] = useState(initialColorConfigs);
   const [giverColor, setGiverColor] = useState("");
   const [selectedVialIndex, setSelectedVialIndex] = useState(-1)
-
+  const [win, setWin] = useState(false)
 
   return (
     <View>
@@ -172,7 +185,11 @@ export default function App() {
       renderItem={( item ) => {
         const itemColors = item["item"] === undefined ? item: item["item"]
         return <TouchableHighlight  underlayColor={"beige"} 
-        onPress = {(e) => {
+        onPress = {(e) => { if(!win) {
+          if(checkWin(colorConfigs)){
+            console.log("Detected win!!!")
+            setWin(true)
+          } else {
           const currentVialIndex = item["index"]
           const sameVial = currentVialIndex == selectedVialIndex
           if (sameVial){
@@ -183,7 +200,6 @@ export default function App() {
             const countOfTopEmptyReceiver = countEmpty(itemColors);
 
             const numberColorsTransferred = Math.min(countOfTopColorGiver, countOfTopEmptyReceiver)
-            console.log("Number of colors transferred: ", numberColorsTransferred, "Count of Top Color Giver: ", countOfTopColorGiver, "count of top empty receiver: ", countOfTopEmptyReceiver)
 
             let newColorConfigs = colorConfigs.map((colorArray, index) => {
               if (isGiverFlask(index, selectedVialIndex)) {
@@ -203,8 +219,9 @@ export default function App() {
             setGiverColor(item["item"])
 
           }
-        }
-        }>
+
+        
+        }}}}>
           <WaterFlask 
                 isSelected={selectedVialIndex == item["index"]} 
                 colors={itemColors} 
@@ -214,11 +231,18 @@ export default function App() {
         
       }}
       keyExtractor={(item, index) => index} />
+    {win ? <></> : <Text >You won!</Text>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  winText: {
+    position: "absolute",
+    fontSize: "10em",
+    color: "red"
+  },
+
   container: {
     margin: "10",
     backgroundColor: 'beige',
