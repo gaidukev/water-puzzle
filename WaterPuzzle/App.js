@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { StyleSheet, Text, View, FlatList, TouchableHighlight } from 'react-native';
+import { Animated, StyleSheet, Text, View, FlatList, TouchableHighlight, Pressable, Easing } from 'react-native';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -150,7 +150,6 @@ function countEmpty(colors){
 }
 
 function checkWin(colorConfigs){
-  console.log("Checking win: ", colorConfigs)
   for(let config of colorConfigs){
     const topElement = config[0]
     for (let i = 1; i < 4; i++){
@@ -185,9 +184,8 @@ export default function App() {
         contentContainerStyle={styles.container}
       renderItem={( item ) => {
         const itemColors = item["item"] === undefined ? item: item["item"]
-        return <TouchableHighlight  underlayColor={"beige"} 
+        return <Pressable  underlayColor={"beige"} 
         onPress = {(e) => { if(!win) {
-          if(!win){
           const currentVialIndex = item["index"]
           const sameVial = currentVialIndex == selectedVialIndex
           if (sameVial){
@@ -216,7 +214,7 @@ export default function App() {
           } else {
             setSelectedVialIndex(item["index"])
             setGiverColor(item["item"])
-          }}}
+          }}
         }
 
           }>
@@ -225,7 +223,7 @@ export default function App() {
                 colors={itemColors} 
               />
 
-        </TouchableHighlight>
+        </Pressable>
 
   
         
