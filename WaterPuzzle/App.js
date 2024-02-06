@@ -150,6 +150,7 @@ function countEmpty(colors){
 }
 
 function checkWin(colorConfigs){
+  console.log("Checking win: ", colorConfigs)
   for(let config of colorConfigs){
     const topElement = config[0]
     for (let i = 1; i < 4; i++){
@@ -186,10 +187,7 @@ export default function App() {
         const itemColors = item["item"] === undefined ? item: item["item"]
         return <TouchableHighlight  underlayColor={"beige"} 
         onPress = {(e) => { if(!win) {
-          if(checkWin(colorConfigs)){
-            console.log("Detected win!!!")
-            setWin(true)
-          } else {
+          if(!win){
           const currentVialIndex = item["index"]
           const sameVial = currentVialIndex == selectedVialIndex
           if (sameVial){
@@ -213,25 +211,27 @@ export default function App() {
               }
               })
             setColorConfigs(newColorConfigs)
+            setWin(checkWin(newColorConfigs))
             setSelectedVialIndex(-1)
           } else {
             setSelectedVialIndex(item["index"])
             setGiverColor(item["item"])
+          }}}
+        }
 
-          }
-
-        
-        }}}}>
+          }>
           <WaterFlask 
                 isSelected={selectedVialIndex == item["index"]} 
                 colors={itemColors} 
               />
 
         </TouchableHighlight>
+
+  
         
       }}
       keyExtractor={(item, index) => index} />
-    {win ? <></> : <Text >You won!</Text>}
+      {win ? (<Text>"You Won!!!!"</Text>) : <></>}
     </View>
   );
 }
@@ -239,8 +239,9 @@ export default function App() {
 const styles = StyleSheet.create({
   winText: {
     position: "absolute",
-    fontSize: "10em",
-    color: "red"
+    fontSize: "100",
+    color: "red",
+    position: "10"
   },
 
   container: {
