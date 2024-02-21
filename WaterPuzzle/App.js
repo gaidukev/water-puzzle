@@ -1,5 +1,5 @@
 import { StatusBar } from 'expo-status-bar';
-import { Animated, StyleSheet, Text, View, FlatList, TouchableHighlight, Pressable, Easing } from 'react-native';
+import { Animated, StyleSheet, Text, View, Image, FlatList, TouchableHighlight, Pressable, Easing } from 'react-native';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
@@ -118,7 +118,10 @@ const getLevel = async () => {
 }
 
 function getLevelData(level) {
-  return require(`./levels/Level ${String(level)}.json`)
+  console.log("LEVEL: ", level)
+
+  return undefined
+  //return require(`./levels/Level ${String(level)}.json`)
 
 }
 
@@ -178,6 +181,10 @@ export default function App() {
   return (
     <View>
       <StatusBar />
+      <Image source={require("./assets/feb-19-back-arrow.png")}
+              style={{width:50, height: 50, backgroundColor: "red"}}/>
+      <Image source={require("./assets/feb-19-restart-arrow.png")} 
+            style={{width:50, height: 50, backgroundColor: "red"}}/>
       <FlatList 
         data={colorConfigs} 
         numColumns={5} 
