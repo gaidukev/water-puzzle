@@ -4,7 +4,13 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import WaterFlask from './components/WaterFlask';
+import TopMenu from './components/TopMenu';
 
+/**
+ * 
+ * @param {*} flaskColors 
+ * @returns 
+ */
 function getTopMostColor(flaskColors){
   for (let i = 0; i < flaskColors.length; i++){
     if (flaskColors[i] != ""){
@@ -14,7 +20,11 @@ function getTopMostColor(flaskColors){
   return ""
 }
 
-
+/**
+ * 
+ * @param {*} flaskColors 
+ * @returns 
+ */
 function getTopMostColorIndex(flaskColors) {
   for (let i = 0; i < flaskColors.length; i++) {
     if (flaskColors[i] != "") {
@@ -24,6 +34,11 @@ function getTopMostColorIndex(flaskColors) {
   return -1
   } 
 
+/**
+ * 
+ * @param {*} flaskColors 
+ * @returns 
+ */
 function getLowestAvailableSpot(flaskColors) {
   for (let i = 3; i >= 0; i--){
     if (flaskColors[i] == "") {
@@ -33,6 +48,11 @@ function getLowestAvailableSpot(flaskColors) {
   return -1
 }
 
+/**
+ * 
+ * @param {*} colors 
+ * @returns 
+ */
 function hasSpace(colors) {
   if (colors[0] == ""){
     return true
@@ -40,6 +60,12 @@ function hasSpace(colors) {
   return false
 }
 
+/**
+ * 
+ * @param {*} receiverFlask 
+ * @param {*} giverFlask 
+ * @returns 
+ */
 function isTransferrable(receiverFlask, giverFlask){
   const topColorReceiver = getTopMostColor(receiverFlask);
   const topColorGiver = getTopMostColor(giverFlask);
@@ -53,18 +79,43 @@ function isTransferrable(receiverFlask, giverFlask){
   }
 }
 
+/**
+ * 
+ * @param {*} currentIndex 
+ * @param {*} giverIndex 
+ * @returns 
+ */
 function isGiverFlask(currentIndex, giverIndex){
   return currentIndex == giverIndex
 }
 
+/**
+ * 
+ * @param {*} currentIndex 
+ * @param {*} receiverIndex 
+ * @returns 
+ */
 function isReceiverFlask(currentIndex, receiverIndex){
   return receiverIndex == currentIndex
 }
 
+/**
+ * 
+ * @param {*} selectedVialIndex 
+ * @param {*} currentItemContents 
+ * @param {*} giverIndex 
+ * @returns 
+ */
 function isValidTransfer(selectedVialIndex, currentItemContents, giverIndex){
   return selectedVialIndex != -1 && isTransferrable(currentItemContents, giverIndex)
 }
 
+/**
+ * 
+ * @param {*} colorArray 
+ * @param {*} numberColorsTransferred 
+ * @returns 
+ */
 function getGiverBeakerColors(colorArray, numberColorsTransferred){
   const topMostColorIndex = getTopMostColorIndex(colorArray)
 
@@ -78,15 +129,36 @@ function getGiverBeakerColors(colorArray, numberColorsTransferred){
   })
 }
 
+/**
+ * 
+ * @param {*} currentIndex 
+ * @param {*} lowestAvailable 
+ * @param {*} numberColorsTransferred 
+ * @returns 
+ */
 function satisfiesLow(currentIndex, lowestAvailable, numberColorsTransferred){
   return currentIndex <= lowestAvailable
 }
 
+/**
+ * 
+ * @param {*} currentIndex 
+ * @param {*} lowestAvailable 
+ * @param {*} numberColorsTransferred 
+ * @returns 
+ */
 function satisfiesHigh(currentIndex, lowestAvailable, numberColorsTransferred){
   const upperBound = lowestAvailable - numberColorsTransferred + 1;
   return currentIndex >= upperBound;
 }
 
+/**
+ * 
+ * @param {*} colorArray 
+ * @param {*} giverColor 
+ * @param {*} numberColorsTransferred 
+ * @returns 
+ */
 function getReceiverBeakerColors(colorArray, giverColor, numberColorsTransferred){
   const lowestAvailableSpotIndex = getLowestAvailableSpot(colorArray)
   return colorArray.map((el, colorIndex) => {
@@ -99,7 +171,10 @@ function getReceiverBeakerColors(colorArray, giverColor, numberColorsTransferred
 }
 
 
-
+/**
+ * 
+ * @param {*} currentLevel 
+ */
 const setLevel = async (currentLevel) => {
   try {
     await AsyncStorage.setItem("current-level", currentLevel);
@@ -108,6 +183,10 @@ const setLevel = async (currentLevel) => {
   }
 }
 
+/**
+ * 
+ * @returns 
+ */
 const getLevel = async () => {
   try {
     const level = await AsyncStorage.getItem("current-level");
@@ -117,14 +196,22 @@ const getLevel = async () => {
   }
 }
 
+/**
+ * 
+ * @param {*} level 
+ * @returns 
+ */
 function getLevelData(level) {
-  console.log("LEVEL: ", level)
-
-  return undefined
+  return require("./levels/Level 0.json")
   //return require(`./levels/Level ${String(level)}.json`)
 
 }
 
+/**
+ * 
+ * @param {*} colors 
+ * @returns 
+ */
 function countTopColor(colors){
   let topColor; 
   let finished = false;
@@ -142,6 +229,11 @@ function countTopColor(colors){
   return count;
 }
 
+/**
+ * 
+ * @param {*} colors 
+ * @returns 
+ */
 function countEmpty(colors){
   let count = 0;
   for (let i = 0; i < 4; i++){
@@ -152,6 +244,11 @@ function countEmpty(colors){
   return count;
 }
 
+/**
+ * 
+ * @param {*} colorConfigs 
+ * @returns 
+ */
 function checkWin(colorConfigs){
   for(let config of colorConfigs){
     const topElement = config[0]
@@ -164,7 +261,31 @@ function checkWin(colorConfigs){
   return true
 }
 
+/**
+ * Given the last move in moveHistory, undoMove will return a copy of colorConfigs where the last move has been
+ * undone. 
+ * @param {*} colorConfigs - 
+ * @param {Array<Object>} moveHistory - array where each object is in form {giverIndex: Integer, receiverIndex: Integer} 
+ */
+function undoMove(colorConfigs, moveHistory){
+  console.log("MOVE HISTORY", moveHistory);
+  const lastMove = moveHistory[moveHistory.length - 1]
+  const {giverIndex, receiverIndex} = lastMove
+  const changedColor = getTopMostColor(colorConfigs[receiverIndex])
+  const topReceiverIndex = getTopMostColorIndex(colorConfigs[receiverIndex])
+  colorConfigs[receiverIndex][topReceiverIndex] = ""
+  const bottomGiverIndex = getLowestAvailableSpot(colorConfigs[giverIndex])
+  colorConfigs[giverIndex][bottomGiverIndex] = changedColor;
+
+  const newConfigs = []
+  for (let config of colorConfigs){
+    newConfigs.push([...config])
+  }
+  return newConfigs
+}
+
 export default function App() {
+  const backgroundColor = "beige"
   let currentLevel = getLevel()
   if (currentLevel == null) {
     currentLevel = 0
@@ -175,23 +296,26 @@ export default function App() {
 
   const [colorConfigs, setColorConfigs] = useState(initialColorConfigs);
   const [giverColor, setGiverColor] = useState("");
-  const [selectedVialIndex, setSelectedVialIndex] = useState(-1)
-  const [win, setWin] = useState(false)
+  const [selectedVialIndex, setSelectedVialIndex] = useState(-1);
+  const [moveHistory, setMoveHistory] = useState([]);
+  const [win, setWin] = useState(false);
 
   return (
     <View>
       <StatusBar />
-      <Image source={require("./assets/feb-19-back-arrow.png")}
-              style={{width:50, height: 50, backgroundColor: "red"}}/>
-      <Image source={require("./assets/feb-19-restart-arrow.png")} 
-            style={{width:50, height: 50, backgroundColor: "red"}}/>
+      <TopMenu 
+        onBackClick={(e) => {
+          setColorConfigs(undoMove(colorConfigs, moveHistory))
+          setMoveHistory([...moveHistory.slice(0, moveHistory.length - 1)])
+        }} 
+        onRestartClick={(e) => setColorConfigs(initialColorConfigs)}/>
       <FlatList 
         data={colorConfigs} 
         numColumns={5} 
         contentContainerStyle={styles.container}
       renderItem={( item ) => {
         const itemColors = item["item"] === undefined ? item: item["item"]
-        return <Pressable  underlayColor={"beige"} 
+        return <Pressable  underlayColor={backgroundColor} 
         onPress = {(e) => { if(!win) {
           const currentVialIndex = item["index"]
           const sameVial = currentVialIndex == selectedVialIndex
@@ -218,6 +342,7 @@ export default function App() {
             setColorConfigs(newColorConfigs)
             setWin(checkWin(newColorConfigs))
             setSelectedVialIndex(-1)
+            setMoveHistory([...moveHistory, {giverIndex: selectedVialIndex, receiverIndex: currentVialIndex}])
           } else {
             setSelectedVialIndex(item["index"])
             setGiverColor(item["item"])
