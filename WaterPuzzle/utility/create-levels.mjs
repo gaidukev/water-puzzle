@@ -192,26 +192,17 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
     return moveEmptyToEnd(colorConfigs);
 }
 
-// async function storeData(levelid, initialColorConfig) {
-//     try {
-//         const colorConfig = JSON.stringify(initialColorConfig)
-//         await AsyncStorage.setItem(levelid, colorConfig)
-//     } catch (e) {
-//         console.error("Error: ", e)
-//     }
-//     return 0
-// }
-
 
 function generateLevels(numLevels) {
 
-    const colors = ["#EDD382", "#61185e", "#D72638", "#9882AC", "#C17817", "#2E6171", "#4f4338"]
+    const colors = ["#FFE593", "#610B5D", "#D21427", "#189ED8", "#FF9200", "#2E6171", "#484541"]
 
     for (let i = 0; i < numLevels; i++){
         const colorConfigs = generateColorConfig(colors, 2, 150)
         // storeData(i, colors)
         console.log("Color configs! ", colorConfigs)
-        fs.writeFile("levels/Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
+
+        fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
             if (err){
                 console.error(err)
             }

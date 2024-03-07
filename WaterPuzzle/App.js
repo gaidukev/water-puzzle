@@ -285,7 +285,7 @@ function undoMove(colorConfigs, moveHistory){
 }
 
 export default function App() {
-  const backgroundColor = "beige"
+  const backgroundColor = "#ebf2ff"
   let currentLevel = getLevel()
   if (currentLevel == null) {
     currentLevel = 0
@@ -376,7 +376,7 @@ const styles = StyleSheet.create({
 
   container: {
     margin: "10",
-    backgroundColor: 'beige',
+    backgroundColor: '#ebf2ff',
     height: "100%",
     width: "100%",
     display: "flex",
