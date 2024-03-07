@@ -270,12 +270,19 @@ function checkWin(colorConfigs){
 function undoMove(colorConfigs, moveHistory){
   console.log("MOVE HISTORY", moveHistory);
   const lastMove = moveHistory[moveHistory.length - 1]
-  const {giverIndex, receiverIndex} = lastMove
+  const {giverIndex, receiverIndex, numberColorsTransferred} = lastMove
   const changedColor = getTopMostColor(colorConfigs[receiverIndex])
   const topReceiverIndex = getTopMostColorIndex(colorConfigs[receiverIndex])
-  colorConfigs[receiverIndex][topReceiverIndex] = ""
   const bottomGiverIndex = getLowestAvailableSpot(colorConfigs[giverIndex])
-  colorConfigs[giverIndex][bottomGiverIndex] = changedColor;
+  console.log("Top receiver index: ", topReceiverIndex, "bottomGiverIndex: ", bottomGiverIndex, "transferred count: ",numberColorsTransferred)
+  console.log("Giver color configs: ", colorConfigs[giverIndex], "Receiver color configs: ", colorConfigs[receiverIndex])
+  for (let i = 0; i < numberColorsTransferred; i++){
+    colorConfigs[giverIndex][bottomGiverIndex - i] = changedColor;
+    colorConfigs[receiverIndex][topReceiverIndex + i] = ""
+  }
+
+  console.log("Giver color configs: ", colorConfigs[giverIndex], "Receiver color configs: ", colorConfigs[receiverIndex])
+
 
   const newConfigs = []
   for (let config of colorConfigs){
@@ -308,7 +315,10 @@ export default function App() {
           setColorConfigs(undoMove(colorConfigs, moveHistory))
           setMoveHistory([...moveHistory.slice(0, moveHistory.length - 1)])
         }} 
-        onRestartClick={(e) => setColorConfigs(initialColorConfigs)}/>
+        onRestartClick={(e) => {
+          setColorConfigs(initialColorConfigs)
+          setMoveHistory([])
+        }}/>
       <FlatList 
         data={colorConfigs} 
         numColumns={5} 
@@ -327,6 +337,7 @@ export default function App() {
             const countOfTopEmptyReceiver = countEmpty(itemColors);
 
             const numberColorsTransferred = Math.min(countOfTopColorGiver, countOfTopEmptyReceiver)
+            console.log("NUMBER COLORS TRANSFERRED: ", numberColorsTransferred)
 
             let newColorConfigs = colorConfigs.map((colorArray, index) => {
               if (isGiverFlask(index, selectedVialIndex)) {
@@ -342,7 +353,7 @@ export default function App() {
             setColorConfigs(newColorConfigs)
             setWin(checkWin(newColorConfigs))
             setSelectedVialIndex(-1)
-            setMoveHistory([...moveHistory, {giverIndex: selectedVialIndex, receiverIndex: currentVialIndex}])
+            setMoveHistory([...moveHistory, {giverIndex: selectedVialIndex, receiverIndex: currentVialIndex, numberColorsTransferred: numberColorsTransferred}])
           } else {
             setSelectedVialIndex(item["index"])
             setGiverColor(item["item"])
