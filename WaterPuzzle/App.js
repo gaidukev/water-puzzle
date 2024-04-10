@@ -1,7 +1,9 @@
 import { StatusBar } from 'expo-status-bar';
 import { Animated, StyleSheet, Text, View, Image, FlatList, TouchableHighlight, Pressable, Easing } from 'react-native';
 import { useState } from 'react';
+import { useFonts, VT323_400Regular} from "@expo-google-fonts/vt323";
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useWindowDimensions } from 'react-native';
 
 import WaterFlask from './components/WaterFlask';
 import TopMenu from './components/TopMenu';
@@ -268,20 +270,15 @@ function checkWin(colorConfigs){
  * @param {Array<Object>} moveHistory - array where each object is in form {giverIndex: Integer, receiverIndex: Integer} 
  */
 function undoMove(colorConfigs, moveHistory){
-  console.log("MOVE HISTORY", moveHistory);
   const lastMove = moveHistory[moveHistory.length - 1]
   const {giverIndex, receiverIndex, numberColorsTransferred} = lastMove
   const changedColor = getTopMostColor(colorConfigs[receiverIndex])
   const topReceiverIndex = getTopMostColorIndex(colorConfigs[receiverIndex])
   const bottomGiverIndex = getLowestAvailableSpot(colorConfigs[giverIndex])
-  console.log("Top receiver index: ", topReceiverIndex, "bottomGiverIndex: ", bottomGiverIndex, "transferred count: ",numberColorsTransferred)
-  console.log("Giver color configs: ", colorConfigs[giverIndex], "Receiver color configs: ", colorConfigs[receiverIndex])
   for (let i = 0; i < numberColorsTransferred; i++){
     colorConfigs[giverIndex][bottomGiverIndex - i] = changedColor;
     colorConfigs[receiverIndex][topReceiverIndex + i] = ""
   }
-
-  console.log("Giver color configs: ", colorConfigs[giverIndex], "Receiver color configs: ", colorConfigs[receiverIndex])
 
 
   const newConfigs = []
@@ -292,6 +289,8 @@ function undoMove(colorConfigs, moveHistory){
 }
 
 export default function App() {
+  let [fontsLoaded] = useFonts({VT323_400Regular});
+
   const backgroundColor = "#ebf2ff"
   let currentLevel = getLevel()
   if (currentLevel == null) {
@@ -307,6 +306,8 @@ export default function App() {
   const [moveHistory, setMoveHistory] = useState([]);
   const [win, setWin] = useState(false);
 
+  const height = useWindowDimensions().height / 2;
+  const width = useWindowDimensions().width / 3;
   return (
     <View>
       <StatusBar />
@@ -337,8 +338,6 @@ export default function App() {
             const countOfTopEmptyReceiver = countEmpty(itemColors);
 
             const numberColorsTransferred = Math.min(countOfTopColorGiver, countOfTopEmptyReceiver)
-            console.log("NUMBER COLORS TRANSFERRED: ", numberColorsTransferred)
-
             let newColorConfigs = colorConfigs.map((colorArray, index) => {
               if (isGiverFlask(index, selectedVialIndex)) {
                 return getGiverBeakerColors(colorArray, numberColorsTransferred)
@@ -372,7 +371,7 @@ export default function App() {
         
       }}
       keyExtractor={(item, index) => index} />
-      {win ? (<Text>"You Won!!!!"</Text>) : <></>}
+      {win ? (<Text style={[styles.winText, {top: height, left: width}]}>You Won!</Text>) : <></>}
     </View>
   );
 }
@@ -380,9 +379,9 @@ export default function App() {
 const styles = StyleSheet.create({
   winText: {
     position: "absolute",
-    fontSize: "100",
-    color: "red",
-    position: "10"
+    fontSize: "55px",
+    color: "#472836",
+    fontFamily: 'VT323_400Regular'
   },
 
   container: {
