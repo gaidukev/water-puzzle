@@ -1,9 +1,9 @@
 import React, { useEffect } from 'react';
 import {StyleSheet, View, Image, Pressable} from 'react-native';
 
-export default function TopMenu({ onBackClick, onRestartClick}) {
+export default function TopMenu({ onSettingsClick, onBackClick, onRestartClick}) {
     return <View style={{flexDirection: "row", justifyContent: "space-between", width: "auto", backgroundColor: "#ebf2ff"}}>
-        <Pressable>
+        <Pressable onPress={onSettingsClick}>
             <Image source={require("../assets/gear arrow pixel.png")}
                 style={{width: 50, height: 50, resizeMode: "contain"}}/>
         </Pressable>

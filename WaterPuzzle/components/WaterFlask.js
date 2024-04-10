@@ -38,16 +38,6 @@ export default function WaterFlask({ isSelected, colors }){
         </Animated.View>
     )
 
-    
-    // return(
-    //     <Animated.View style={[styles.vial, {marginTop: marginTopTest}]} >
-    //         {/* <Animated.View style={[styles.water, colors[0] != "" ? {backgroundColor: colors[0]} : {backgroundColor: null}]}/> */}
-    //         <Animated.View style={[styles.water, colors[0] != "" ? {backgroundColor: colors[0]} : {backgroundColor: null}]}/> 
-    //         <View style={[styles.water, colors[1] != "" ? {backgroundColor: colors[1]} : {backgroundColor: null}]}/>
-    //         <View style={[styles.water, colors[2] != "" ? {backgroundColor: colors[2]} : {backgroundColor: null}]}/>
-    //         <View style={[styles.water, colors[3] != "" ? {backgroundColor: colors[3]} : {backgroundColor: null}, styles.waterBottom]}/>
-    //     </Animated.View>
-    // )
 }
 
 const styles = StyleSheet.create({

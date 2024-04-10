@@ -7,6 +7,7 @@ import { useWindowDimensions } from 'react-native';
 
 import WaterFlask from './components/WaterFlask';
 import TopMenu from './components/TopMenu';
+import SettingsMenu from './components/Settings';
 
 /**
  * 
@@ -305,6 +306,7 @@ export default function App() {
   const [selectedVialIndex, setSelectedVialIndex] = useState(-1);
   const [moveHistory, setMoveHistory] = useState([]);
   const [win, setWin] = useState(false);
+  const [isSettingsView, setIsSettingsView] = useState(false);
 
   const height = useWindowDimensions().height / 2;
   const width = useWindowDimensions().width / 3;
@@ -312,6 +314,9 @@ export default function App() {
     <View>
       <StatusBar />
       <TopMenu 
+        onSettingsClick={(e) => {
+          setIsSettingsView(true)
+        }}
         onBackClick={(e) => {
           setColorConfigs(undoMove(colorConfigs, moveHistory))
           setMoveHistory([...moveHistory.slice(0, moveHistory.length - 1)])
@@ -320,6 +325,7 @@ export default function App() {
           setColorConfigs(initialColorConfigs)
           setMoveHistory([])
         }}/>
+      {isSettingsView ? <SettingsMenu textStyles={styles.generalText} /> : <></>}
       <FlatList 
         data={colorConfigs} 
         numColumns={5} 
@@ -371,17 +377,19 @@ export default function App() {
         
       }}
       keyExtractor={(item, index) => index} />
-      {win ? (<Text style={[styles.winText, {top: height, left: width}]}>You Won!</Text>) : <></>}
+      {win ? (<Text style={[styles.winText, styles.generalText, {top: height, left: width}]}>You Won!</Text>) : <></>}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  winText: {
-    position: "absolute",
-    fontSize: "55px",
+  generalText: {
     color: "#472836",
     fontFamily: 'VT323_400Regular'
+  },
+  winText: {
+    position: "absolute",
+    fontSize: "55px"
   },
 
   container: {
