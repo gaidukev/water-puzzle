@@ -318,12 +318,16 @@ export default function App() {
           setIsSettingsView(!isSettingsView)
         }}
         onBackClick={(e) => {
-          setColorConfigs(undoMove(colorConfigs, moveHistory))
-          setMoveHistory([...moveHistory.slice(0, moveHistory.length - 1)])
+          if (!isSettingsView){
+            setColorConfigs(undoMove(colorConfigs, moveHistory))
+            setMoveHistory([...moveHistory.slice(0, moveHistory.length - 1)])
+          }
         }} 
         onRestartClick={(e) => {
-          setColorConfigs(initialColorConfigs)
-          setMoveHistory([])
+          if (!isSettingsView){
+            setColorConfigs(initialColorConfigs)
+            setMoveHistory([])
+          }
         }}/>
       {isSettingsView ? 
         <SettingsMenu 

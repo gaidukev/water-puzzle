@@ -192,22 +192,48 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
     return moveEmptyToEnd(colorConfigs);
 }
 
-
-function generateLevels(numLevels) {
-
-    const colors = ["#FFE593", "#610B5D", "#D21427", "#189ED8", "#FF9200", "#2E6171", "#484541"]
-
-    for (let i = 0; i < numLevels; i++){
-        const colorConfigs = generateColorConfig(colors, 2, 150)
-        // storeData(i, colors)
-        console.log("Color configs! ", colorConfigs)
-
-        fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
-            if (err){
-                console.error(err)
-            }
-        })
-    }
+const modes = {
+    easy: "EASY",
+    medium: "MEDIUM",
+    hard: "HARD"
 }
 
-generateLevels(15)
+/**
+ * generates x levels of given mode
+ * @param {} numLevels 
+ * @param {*} mode 
+ */
+function generateLevels(numLevels, mode) {
+    function generate(genColors, countEmpty){
+        for (let i = 0; i < numLevels; i++){
+            const colorConfigs = generateColorConfig(genColors, countEmpty, 150)
+
+            fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/" + mode + "Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
+                if (err){
+                    console.error(err)
+                }
+            })
+        }
+    }
+
+    let colors;
+    let countEmpty;
+    if (mode == modes.easy){
+        colors = ["#FFE593", "#610B5D", "#D21427", "#189ED8", "#FF9200", "#2E6171"]
+        countEmpty = 2
+    } else if (mode == modes.medium){
+        colors = ["#FFE593", "#610B5D", "#D21427", "#189ED8", "#FF9200", "#2E6171", "#484541"]
+        countEmpty = 2
+        
+    } else if (mode == modes.hard){
+        colors = ["#FFE593", "#610B5D", "#D21427", "#189ED8", "#FF9200", "#2E6171", "#484541", "#3cb1ff"]
+        countEmpty = 1
+    }
+
+    generate(colors, countEmpty)    
+
+}
+
+generateLevels(10, modes.easy);
+generateLevels(10, modes.medium);
+generateLevels(10, modes.hard);
