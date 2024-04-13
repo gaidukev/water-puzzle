@@ -315,7 +315,7 @@ export default function App() {
       <StatusBar />
       <TopMenu 
         onSettingsClick={(e) => {
-          setIsSettingsView(true)
+          setIsSettingsView(!isSettingsView)
         }}
         onBackClick={(e) => {
           setColorConfigs(undoMove(colorConfigs, moveHistory))
@@ -325,7 +325,11 @@ export default function App() {
           setColorConfigs(initialColorConfigs)
           setMoveHistory([])
         }}/>
-      {isSettingsView ? <SettingsMenu textStyles={styles.generalText} /> : <></>}
+      {isSettingsView ? 
+        <SettingsMenu 
+          textStyles={styles.generalText} 
+          onClosePress={(e) => setIsSettingsView(false)}/> : 
+        <></>}
       <FlatList 
         data={colorConfigs} 
         numColumns={5} 
@@ -333,7 +337,7 @@ export default function App() {
       renderItem={( item ) => {
         const itemColors = item["item"] === undefined ? item: item["item"]
         return <Pressable  underlayColor={backgroundColor} 
-        onPress = {(e) => { if(!win) {
+        onPress = {(e) => { if(!win & !isSettingsView) {
           const currentVialIndex = item["index"]
           const sameVial = currentVialIndex == selectedVialIndex
           if (sameVial){
