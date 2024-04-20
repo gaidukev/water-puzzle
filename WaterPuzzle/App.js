@@ -1,13 +1,15 @@
 import { StatusBar } from 'expo-status-bar';
 import { Animated, StyleSheet, Text, View, Image, FlatList, TouchableHighlight, Pressable, Easing } from 'react-native';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useFonts, VT323_400Regular} from "@expo-google-fonts/vt323";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWindowDimensions } from 'react-native';
+import { modes } from './utility/modes';
 
 import WaterFlask from './components/WaterFlask';
 import TopMenu from './components/TopMenu';
 import SettingsMenu from './components/Settings';
+import WinMenu from './components/WinMenu';
 
 /**
  * 
@@ -178,9 +180,10 @@ function getReceiverBeakerColors(colorArray, giverColor, numberColorsTransferred
  * 
  * @param {*} currentLevel 
  */
-const setLevel = async (currentLevel) => {
+const storeLevel = async (mode, currentLevel) => {
+  console.log("STORING LEVEL: ", currentLevel, "mode: ", mode)
   try {
-    await AsyncStorage.setItem("current-level", currentLevel);
+    await AsyncStorage.setItem(mode, currentLevel);
   } catch (e) {
     console.error(e)
   }
@@ -190,10 +193,19 @@ const setLevel = async (currentLevel) => {
  * 
  * @returns 
  */
-const getLevel = async () => {
+// async function getLevel(mode) {
+//   const level = await AsyncStorage.getItem(mode);
+//   return level;
+// }
+
+const getLevel = async (mode) => {
   try {
-    const level = await AsyncStorage.getItem("current-level");
-    return level
+    const level = await AsyncStorage.getItem(mode);
+    if (level != null){
+      return level
+    } else {
+      return "0"
+    }
   } catch (e) {
     console.error(e)
   }
@@ -204,8 +216,8 @@ const getLevel = async () => {
  * @param {*} level 
  * @returns 
  */
-function getLevelData(level) {
-  return require("./levels/Level 0.json")
+function getLevelData(mode, level) {
+  return require(`./levels/${mode}Level ${level}.json`)
   //return require(`./levels/Level ${String(level)}.json`)
 
 }
@@ -289,27 +301,55 @@ function undoMove(colorConfigs, moveHistory){
   return newConfigs
 }
 
+function increaseMode(mode){
+  if (mode == modes.easy){
+    return modes.medium
+  } else if (mode == modes.medium){
+    return modes.hard
+  } else {
+    return mode
+  }
+}
+
+function decreaseMode(mode){
+  if (mode == modes.hard){
+    return modes.medium
+  } else if (mode == modes.medium) {
+    return modes.easy
+  } else {
+    return mode
+  }
+}
+
 export default function App() {
   let [fontsLoaded] = useFonts({VT323_400Regular});
+  // AsyncStorage.removeItem(modes.easy);
+  // AsyncStorage.removeItem(modes.medium);
+  // AsyncStorage.removeItem(modes.hard);
+  //storeLevel(modes.easy, 0);
+  //storeLevel(modes.medium, 0);
+  //storeLevel(modes.hard, 0)
 
   const backgroundColor = "#ebf2ff"
-  let currentLevel = getLevel()
-  if (currentLevel == null) {
-    currentLevel = 0
-  }
-  currentLevel = 0
+  
+  const [mode, setMode] = useState(modes.easy);
 
-  const initialColorConfigs = getLevelData(currentLevel)
+  const [currentLevel, setCurrentLevel] = useState(0) // default value
+  const [colorConfigs, setColorConfigs] = useState([["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""]]); // default value
+  useEffect(() => {
+    getLevel(mode).then((level) => {
+      setCurrentLevel(level);
+      setColorConfigs(getLevelData(mode, level));
+    })    
+  }, [])
 
-  const [colorConfigs, setColorConfigs] = useState(initialColorConfigs);
+
   const [giverColor, setGiverColor] = useState("");
   const [selectedVialIndex, setSelectedVialIndex] = useState(-1);
   const [moveHistory, setMoveHistory] = useState([]);
   const [win, setWin] = useState(false);
   const [isSettingsView, setIsSettingsView] = useState(false);
 
-  const height = useWindowDimensions().height / 2;
-  const width = useWindowDimensions().width / 3;
   return (
     <View>
       <StatusBar />
@@ -325,15 +365,11 @@ export default function App() {
         }} 
         onRestartClick={(e) => {
           if (!isSettingsView){
-            setColorConfigs(initialColorConfigs)
+            setColorConfigs(getLevelData(mode, currentLevel))
             setMoveHistory([])
           }
         }}/>
-      {isSettingsView ? 
-        <SettingsMenu 
-          textStyles={styles.generalText} 
-          onClosePress={(e) => setIsSettingsView(false)}/> : 
-        <></>}
+
       <FlatList 
         data={colorConfigs} 
         numColumns={5} 
@@ -364,9 +400,16 @@ export default function App() {
               }
               })
             setColorConfigs(newColorConfigs)
-            setWin(checkWin(newColorConfigs))
             setSelectedVialIndex(-1)
             setMoveHistory([...moveHistory, {giverIndex: selectedVialIndex, receiverIndex: currentVialIndex, numberColorsTransferred: numberColorsTransferred}])
+            let isNewWin = checkWin(newColorConfigs);
+            console.log("IS NEW WIN: ", isNewWin)
+            setWin(isNewWin)
+            if (isNewWin){
+              storeLevel(mode, Number(currentLevel) + 1); 
+              setMoveHistory([]);
+
+            }
           } else {
             setSelectedVialIndex(item["index"])
             setGiverColor(item["item"])
@@ -385,7 +428,46 @@ export default function App() {
         
       }}
       keyExtractor={(item, index) => index} />
-      {win ? (<Text style={[styles.winText, styles.generalText, {top: height, left: width}]}>You Won!</Text>) : <></>}
+      {win ? 
+        <WinMenu 
+          onNext={(e) => {
+            setCurrentLevel(Number(currentLevel) + 1);
+            setColorConfigs(getLevelData(mode, Number(currentLevel) + 1))
+            setGiverColor("");
+            setSelectedVialIndex(-1);
+            setWin(false);
+            setIsSettingsView(false);
+          }}
+          textStyles={styles.generalText}/> :
+        <></>}
+      {isSettingsView ? 
+        <SettingsMenu 
+          mode={mode}
+          level={currentLevel}
+          textStyles={styles.generalText} 
+          onClosePress={(e) => setIsSettingsView(false)}
+          onModeLessPress={(e) => {
+            const newMode = decreaseMode(mode);
+            setMode(newMode);
+            getLevel(newMode).then((newLevel) => {
+              const newLevelData = getLevelData(newMode, newLevel);
+              setCurrentLevel(newLevel)
+              setColorConfigs(newLevelData);
+            })
+
+          }}
+          onModeMorePress={(e) => {
+            const newMode = increaseMode(mode)
+            setMode(newMode)
+            getLevel(newMode).then((newLevel) => {
+              console.log("NEW LEVEL: ", newLevel)
+              const newLevelData = getLevelData(newMode, newLevel);
+              setCurrentLevel(newLevel)
+              setColorConfigs(newLevelData);
+            });
+
+          }}/> : 
+        <></>}
     </View>
   );
 }
@@ -393,7 +475,8 @@ export default function App() {
 const styles = StyleSheet.create({
   generalText: {
     color: "#472836",
-    fontFamily: 'VT323_400Regular'
+    fontFamily: 'VT323_400Regular',
+    fontSize: "30px"
   },
   winText: {
     position: "absolute",

@@ -1,6 +1,11 @@
-import pkg from '@react-native-async-storage/async-storage';
 import * as fs from "fs"
-const AsyncStorage = pkg.default
+import { count } from 'console';
+const modes = {
+    easy: "EASY",
+    medium: "MEDIUM",
+    hard: "HARD"
+}
+
 class Beaker{
 
     getBeaker(color){
@@ -40,7 +45,7 @@ class Beaker{
      * 
      * @returns {integer} The highest index where the flask is non-empty, or -1 if the flask is empty
      */
-    #getTopMostNonEmptyIndex(){
+    getTopMostNonEmptyIndex(){
         for (let i = 0; i < 4; i++){
             if (this.content[i] != "") {
                 return i
@@ -54,7 +59,7 @@ class Beaker{
      * @returns {string} Color that's been removed, or the empty string if the beaker is empty
      */
     removeColor(){
-        const removeIndex = this.#getTopMostNonEmptyIndex()
+        const removeIndex = this.getTopMostNonEmptyIndex()
         if (removeIndex != -1) {
             const removeColor = this.content[removeIndex];
             this.content[removeIndex] = ""
@@ -68,12 +73,27 @@ class Beaker{
     }
 
     isEmpty(){
-        return this.#getTopMostNonEmptyIndex() == -1
+        return this.getTopMostNonEmptyIndex() == -1
     }
 
     isFull(){
         return this.#getBottomMostEmptyIndex() == -1
     }
+}
+
+/**
+ * A giver is valid if:
+ *  - it is not empty
+ * AND:
+ *  - it's one item sitting in an empty glass, or
+ *  - it is on top of another color that is itself
+ * @param {} beaker 
+ */
+function isValidGiver(beaker){
+    const isEmpty = beaker.isEmpty()
+    const justOneItem = beaker.getContent()[2] == ""
+    const onTopOfItself = justOneItem ? false : beaker[beaker.getTopMostNonEmptyIndex() + 1] == beaker[beaker.getTopMostNonEmptyIndex()]
+    return !isEmpty & (onTopOfItself | justOneItem);
 }
 
 function pickRandomGiver(beakers){
@@ -82,7 +102,8 @@ function pickRandomGiver(beakers){
     while(!found){
     //for (let j = 0; j < 6; j++){
         selectedBeaker = beakers[Math.floor(Math.random()*beakers.length)];
-        if (!selectedBeaker.isEmpty()){
+        //if (!selectedBeaker.isEmpty()){
+        if (isValidGiver(selectedBeaker)){
             found = true
         }
     }
@@ -125,26 +146,38 @@ function emptyOneBeaker(colorConfig){
     return colorConfig;
 }
 
-function moveEmptyToEnd(colorConfigs){
+function moveEmptyToEnd(colorConfigs, numEmpty){
+    console.log("IN MOVE EMPTY TO END: ", numEmpty)
     const indexFirstEmpty = colorConfigs.findIndex((el) => JSON.stringify(el) == JSON.stringify(["", "", "", ""]))
 
-    if (indexFirstEmpty != (colorConfigs.length - 2)){
-        const replacementIndex = JSON.stringify(colorConfigs[colorConfigs.length - 1]) == JSON.stringify(["", "", "", ""]) ? colorConfigs.length - 2 : colorConfigs.length - 1
-        
-        let replacementIndexValue = colorConfigs[replacementIndex];
-        colorConfigs[replacementIndex] = ["", "", "", ""]
-        colorConfigs[indexFirstEmpty] = replacementIndexValue
-        if (colorConfigs[colorConfigs.length - 2] != ["", "", "", ""]){
-            const indexSecondEmpty = colorConfigs.findIndex((el) => JSON.stringify(el) == JSON.stringify(["", "", "", ""]))
-
-            replacementIndexValue = colorConfigs[colorConfigs.length - 2]
-            colorConfigs[indexSecondEmpty] = replacementIndexValue;
-            colorConfigs[colorConfigs.length - 2] = ["", "", "", ""]
-        }
-        
-    }
+    if (numEmpty == 2){
+        if (indexFirstEmpty != (colorConfigs.length - 2)){
+            const replacementIndex = JSON.stringify(colorConfigs[colorConfigs.length - 1]) == JSON.stringify(["", "", "", ""]) ? colorConfigs.length - 2 : colorConfigs.length - 1
+            
+            let replacementIndexValue = colorConfigs[replacementIndex];
+            colorConfigs[replacementIndex] = ["", "", "", ""]
+            colorConfigs[indexFirstEmpty] = replacementIndexValue
+            if (colorConfigs[colorConfigs.length - 2] != ["", "", "", ""]){
+                const indexSecondEmpty = colorConfigs.findIndex((el) => JSON.stringify(el) == JSON.stringify(["", "", "", ""]))
     
+                replacementIndexValue = colorConfigs[colorConfigs.length - 2]
+                colorConfigs[indexSecondEmpty] = replacementIndexValue;
+                colorConfigs[colorConfigs.length - 2] = ["", "", "", ""]
+            }
+            
+        }
+    }
+    else if (numEmpty == 1) {
 
+        console.log("COLOR CONFIGS: ", colorConfigs)
+        const replacementIndex = JSON.stringify(colorConfigs[colorConfigs.length - 1]) == JSON.stringify(["", "", "", ""]) ? colorConfigs.length - 2 : colorConfigs.length - 1
+        if (replacementIndex != colorConfigs.length - 1){
+            colorConfigs[replacementIndex] = colorConfigs[colorConfigs.length - 1];
+            colorConfigs[colorConfigs.length - 1] = ["", "", "", ""]
+        }
+    }
+
+    console.log("COLOR CONFIGS AFTER CHANGE: ", colorConfigs)
     return colorConfigs
 }
 
@@ -172,11 +205,18 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
 
 
 
+    console.log("COLOR CONFIGS BEFORE SHUFFLE: ", colorConfigs)
+
     for (let i = 0; i < numberOfShuffles; i++) {
         const giver = pickRandomGiver(colorConfigs);
         const receiver = pickRandomReceiver(colorConfigs, giver);
         const color = giver.removeColor();
         receiver.addColor(color);
+        console.log("===================")
+        for (let shuffle of colorConfigs) {
+            console.log(`After shuffle ${i}: ${shuffle.getContent()}`)
+        }
+        console.log("==================")
     }
 
     let currentCountEmpty = countEmptyBeakers(colorConfigs)
@@ -189,14 +229,10 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
 
     console.log("Color configs: ", colorConfigs)
 
-    return moveEmptyToEnd(colorConfigs);
+    return moveEmptyToEnd(colorConfigs, countEmpty);
 }
 
-const modes = {
-    easy: "EASY",
-    medium: "MEDIUM",
-    hard: "HARD"
-}
+
 
 /**
  * generates x levels of given mode
@@ -226,7 +262,8 @@ function generateLevels(numLevels, mode) {
         countEmpty = 2
         
     } else if (mode == modes.hard){
-        colors = ["#FFE593", "#610B5D", "#D21427", "#189ED8", "#FF9200", "#2E6171", "#484541", "#3cb1ff"]
+        //colors = ["#FFE593", "#610B5D", "#D21427", "#189ED8", "#FF9200", "#2E6171", "#484541", "#3cb1ff"]
+        colors = ["#FFE593", "#610B5D", "#D21427", "#189ED8", "#FF9200", "#2E6171", "#484541"]
         countEmpty = 1
     }
 
@@ -234,6 +271,6 @@ function generateLevels(numLevels, mode) {
 
 }
 
-generateLevels(10, modes.easy);
-generateLevels(10, modes.medium);
+//generateLevels(10, modes.easy);
+//generateLevels(10, modes.medium);
 generateLevels(10, modes.hard);
