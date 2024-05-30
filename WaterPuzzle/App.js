@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import { useFonts, VT323_400Regular} from "@expo-google-fonts/vt323";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWindowDimensions } from 'react-native';
-import { modes } from './utility/modes';
 
 import WaterFlask from './components/WaterFlask';
 import TopMenu from './components/TopMenu';
-import SettingsMenu from './components/Settings';
 import WinMenu from './components/WinMenu';
+
+const memoryKey = "level"
 
 /**
  * 
@@ -180,10 +180,9 @@ function getReceiverBeakerColors(colorArray, giverColor, numberColorsTransferred
  * 
  * @param {*} currentLevel 
  */
-const storeLevel = async (mode, currentLevel) => {
-  console.log("STORING LEVEL: ", currentLevel, "mode: ", mode)
+const storeLevel = async (currentLevel) => {
   try {
-    await AsyncStorage.setItem(mode, currentLevel);
+    await AsyncStorage.setItem(memoryKey, currentLevel);
   } catch (e) {
     console.error(e)
   }
@@ -193,14 +192,9 @@ const storeLevel = async (mode, currentLevel) => {
  * 
  * @returns 
  */
-// async function getLevel(mode) {
-//   const level = await AsyncStorage.getItem(mode);
-//   return level;
-// }
-
-const getLevel = async (mode) => {
+const getLevel = async () => {
   try {
-    const level = await AsyncStorage.getItem(mode);
+    const level = await AsyncStorage.getItem(memoryKey);
     if (level != null){
       return level
     } else {
@@ -216,9 +210,8 @@ const getLevel = async (mode) => {
  * @param {*} level 
  * @returns 
  */
-function getLevelData(mode, level) {
-  return require(`./levels/${mode}Level ${level}.json`)
-  //return require(`./levels/Level ${String(level)}.json`)
+function getLevelData(level) {
+  return require(`./levels/Level ${level}.json`)
 
 }
 
@@ -301,45 +294,21 @@ function undoMove(colorConfigs, moveHistory){
   return newConfigs
 }
 
-function increaseMode(mode){
-  if (mode == modes.easy){
-    return modes.medium
-  } else if (mode == modes.medium){
-    return modes.hard
-  } else {
-    return mode
-  }
-}
-
-function decreaseMode(mode){
-  if (mode == modes.hard){
-    return modes.medium
-  } else if (mode == modes.medium) {
-    return modes.easy
-  } else {
-    return mode
-  }
-}
 
 export default function App() {
   let [fontsLoaded] = useFonts({VT323_400Regular});
-  // AsyncStorage.removeItem(modes.easy);
+  //AsyncStorage.removeItem(memoryKey);
   // AsyncStorage.removeItem(modes.medium);
-  // AsyncStorage.removeItem(modes.hard);
-  //storeLevel(modes.easy, 0);
-  //storeLevel(modes.medium, 0);
-  //storeLevel(modes.hard, 0)
+  // AsyncStorage.setItem(memoryKey, 14);
 
   const backgroundColor = "#ebf2ff"
-  
-  const [mode, setMode] = useState(modes.easy);
 
   const [currentLevel, setCurrentLevel] = useState(0) // default value
   const [colorConfigs, setColorConfigs] = useState([["", "", "", ""], ["", "", "", ""], ["", "", "", ""], ["", "", "", ""]]); // default value
   useEffect(() => {
-    getLevel(mode).then((level) => {
+    getLevel().then((level) => {
       setCurrentLevel(level);
-      setColorConfigs(getLevelData(mode, level));
+      setColorConfigs(getLevelData(level));
     })    
   }, [])
 
@@ -348,26 +317,18 @@ export default function App() {
   const [selectedVialIndex, setSelectedVialIndex] = useState(-1);
   const [moveHistory, setMoveHistory] = useState([]);
   const [win, setWin] = useState(false);
-  const [isSettingsView, setIsSettingsView] = useState(false);
 
   return (
     <View>
       <StatusBar />
       <TopMenu 
-        onSettingsClick={(e) => {
-          setIsSettingsView(!isSettingsView)
-        }}
         onBackClick={(e) => {
-          if (!isSettingsView){
-            setColorConfigs(undoMove(colorConfigs, moveHistory))
-            setMoveHistory([...moveHistory.slice(0, moveHistory.length - 1)])
-          }
+          setColorConfigs(undoMove(colorConfigs, moveHistory))
+          setMoveHistory([...moveHistory.slice(0, moveHistory.length - 1)])
         }} 
         onRestartClick={(e) => {
-          if (!isSettingsView){
-            setColorConfigs(getLevelData(mode, currentLevel))
-            setMoveHistory([])
-          }
+          setColorConfigs(getLevelData(currentLevel))
+          setMoveHistory([])
         }}/>
 
       <FlatList 
@@ -377,7 +338,7 @@ export default function App() {
       renderItem={( item ) => {
         const itemColors = item["item"] === undefined ? item: item["item"]
         return <Pressable  underlayColor={backgroundColor} 
-        onPress = {(e) => { if(!win & !isSettingsView) {
+        onPress = {(e) => { if(!win) {
           const currentVialIndex = item["index"]
           const sameVial = currentVialIndex == selectedVialIndex
           if (sameVial){
@@ -403,10 +364,9 @@ export default function App() {
             setSelectedVialIndex(-1)
             setMoveHistory([...moveHistory, {giverIndex: selectedVialIndex, receiverIndex: currentVialIndex, numberColorsTransferred: numberColorsTransferred}])
             let isNewWin = checkWin(newColorConfigs);
-            console.log("IS NEW WIN: ", isNewWin)
             setWin(isNewWin)
             if (isNewWin){
-              storeLevel(mode, Number(currentLevel) + 1); 
+              storeLevel(Number(currentLevel) + 1); 
               setMoveHistory([]);
 
             }
@@ -432,41 +392,12 @@ export default function App() {
         <WinMenu 
           onNext={(e) => {
             setCurrentLevel(Number(currentLevel) + 1);
-            setColorConfigs(getLevelData(mode, Number(currentLevel) + 1))
+            setColorConfigs(getLevelData(Number(currentLevel) + 1))
             setGiverColor("");
             setSelectedVialIndex(-1);
             setWin(false);
-            setIsSettingsView(false);
           }}
           textStyles={styles.generalText}/> :
-        <></>}
-      {isSettingsView ? 
-        <SettingsMenu 
-          mode={mode}
-          level={currentLevel}
-          textStyles={styles.generalText} 
-          onClosePress={(e) => setIsSettingsView(false)}
-          onModeLessPress={(e) => {
-            const newMode = decreaseMode(mode);
-            setMode(newMode);
-            getLevel(newMode).then((newLevel) => {
-              const newLevelData = getLevelData(newMode, newLevel);
-              setCurrentLevel(newLevel)
-              setColorConfigs(newLevelData);
-            })
-
-          }}
-          onModeMorePress={(e) => {
-            const newMode = increaseMode(mode)
-            setMode(newMode)
-            getLevel(newMode).then((newLevel) => {
-              console.log("NEW LEVEL: ", newLevel)
-              const newLevelData = getLevelData(newMode, newLevel);
-              setCurrentLevel(newLevel)
-              setColorConfigs(newLevelData);
-            });
-
-          }}/> : 
         <></>}
     </View>
   );

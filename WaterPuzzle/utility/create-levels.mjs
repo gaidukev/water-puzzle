@@ -239,12 +239,12 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
  * @param {} numLevels 
  * @param {*} mode 
  */
-function generateLevels(numLevels, mode) {
+function generateLevels(lowest, numLevels, mode) {
     function generate(genColors, countEmpty){
-        for (let i = 0; i < numLevels; i++){
+        for (let i = lowest; i < numLevels + lowest; i++){
             const colorConfigs = generateColorConfig(genColors, countEmpty, 150)
 
-            fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/" + mode + "Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
+            fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
                 if (err){
                     console.error(err)
                 }
@@ -271,6 +271,6 @@ function generateLevels(numLevels, mode) {
 
 }
 
-//generateLevels(10, modes.easy);
-//generateLevels(10, modes.medium);
-generateLevels(10, modes.hard);
+generateLevels(0, 10, modes.easy);
+generateLevels(10, 30, modes.hard);
+generateLevels(30, 45, modes.medium);
