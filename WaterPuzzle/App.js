@@ -326,9 +326,9 @@ export default function App() {
   // AsyncStorage.removeItem(modes.easy);
   // AsyncStorage.removeItem(modes.medium);
   // AsyncStorage.removeItem(modes.hard);
-  //storeLevel(modes.easy, 0);
-  //storeLevel(modes.medium, 0);
-  //storeLevel(modes.hard, 0)
+  // storeLevel(modes.easy, 0);
+  // storeLevel(modes.medium, 0);
+  // storeLevel(modes.hard, 0)
 
   const backgroundColor = "#ebf2ff"
   
@@ -377,7 +377,7 @@ export default function App() {
       renderItem={( item ) => {
         const itemColors = item["item"] === undefined ? item: item["item"]
         return <Pressable  underlayColor={backgroundColor} 
-        onPress = {(e) => { if(!win & !isSettingsView) {
+        onPress = {(e) => { if(!win && !isSettingsView) {
           const currentVialIndex = item["index"]
           const sameVial = currentVialIndex == selectedVialIndex
           if (sameVial){

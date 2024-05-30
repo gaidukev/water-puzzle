@@ -5,6 +5,7 @@ const modes = {
     medium: "MEDIUM",
     hard: "HARD"
 }
+const FAIL = -1;
 
 class Beaker{
 
@@ -92,22 +93,27 @@ class Beaker{
 function isValidGiver(beaker){
     const isEmpty = beaker.isEmpty()
     const justOneItem = beaker.getContent()[2] == ""
-    const onTopOfItself = justOneItem ? false : beaker[beaker.getTopMostNonEmptyIndex() + 1] == beaker[beaker.getTopMostNonEmptyIndex()]
-    return !isEmpty & (onTopOfItself | justOneItem);
+    const onTopOfItself = justOneItem ? false : beaker.getContent()[beaker.getTopMostNonEmptyIndex() + 1] == beaker.getContent()[beaker.getTopMostNonEmptyIndex()]
+    return !isEmpty && (onTopOfItself || justOneItem);
 }
 
 function pickRandomGiver(beakers){
     let found = false
     let selectedBeaker;
-    while(!found){
-    //for (let j = 0; j < 6; j++){
+    let tries = 0;
+    while((!found) && !(tries > beakers.length)){
         selectedBeaker = beakers[Math.floor(Math.random()*beakers.length)];
-        //if (!selectedBeaker.isEmpty()){
         if (isValidGiver(selectedBeaker)){
             found = true
         }
+        tries++;
     }
-    return selectedBeaker;
+
+    if (tries > beakers.length){
+        return FAIL;
+    } else {
+        return selectedBeaker;
+    }
 }
 
 function pickRandomReceiver(beakers, giverBeaker){
@@ -115,8 +121,17 @@ function pickRandomReceiver(beakers, giverBeaker){
     let selectedBeaker;
     while(!found){
         selectedBeaker = beakers[Math.floor(Math.random() * beakers.length)];
-        if (!selectedBeaker.isFull() & selectedBeaker !== giverBeaker){
-            found = true;
+        if (!selectedBeaker.isFull() && selectedBeaker !== giverBeaker){
+            const topColorReceiver = selectedBeaker[selectedBeaker.getTopMostNonEmptyIndex()]
+            const topColorGiver = giverBeaker[giverBeaker.getTopMostNonEmptyIndex()]
+            if ((topColorGiver != topColorReceiver) && (topColorGiver != undefined)){
+                const chance = Math.random()
+                if (chance < 0.15) {
+                    found = true;
+                }
+            } else {
+                found = true;
+            }
         }
     }
     return selectedBeaker;
@@ -147,7 +162,7 @@ function emptyOneBeaker(colorConfig){
 }
 
 function moveEmptyToEnd(colorConfigs, numEmpty){
-    console.log("IN MOVE EMPTY TO END: ", numEmpty)
+    //console.log("IN MOVE EMPTY TO END: ", numEmpty)
     const indexFirstEmpty = colorConfigs.findIndex((el) => JSON.stringify(el) == JSON.stringify(["", "", "", ""]))
 
     if (numEmpty == 2){
@@ -169,15 +184,13 @@ function moveEmptyToEnd(colorConfigs, numEmpty){
     }
     else if (numEmpty == 1) {
 
-        console.log("COLOR CONFIGS: ", colorConfigs)
-        const replacementIndex = JSON.stringify(colorConfigs[colorConfigs.length - 1]) == JSON.stringify(["", "", "", ""]) ? colorConfigs.length - 2 : colorConfigs.length - 1
-        if (replacementIndex != colorConfigs.length - 1){
-            colorConfigs[replacementIndex] = colorConfigs[colorConfigs.length - 1];
+        //console.log("COLOR CONFIGS: ", colorConfigs)
+        if (indexFirstEmpty != (colorConfigs.length - 1)){
+            colorConfigs[indexFirstEmpty] = colorConfigs[colorConfigs.length - 1];
             colorConfigs[colorConfigs.length - 1] = ["", "", "", ""]
         }
     }
-
-    console.log("COLOR CONFIGS AFTER CHANGE: ", colorConfigs)
+    //console.log("COLOR CONFIGS AFTER CHANGE: ", colorConfigs)
     return colorConfigs
 }
 
@@ -202,21 +215,20 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
         }
         colorConfigs.push(currentBeaker);
     }
-
-
-
-    console.log("COLOR CONFIGS BEFORE SHUFFLE: ", colorConfigs)
+    //console.log("COLOR CONFIGS BEFORE SHUFFLE: ", colorConfigs)
 
     for (let i = 0; i < numberOfShuffles; i++) {
         const giver = pickRandomGiver(colorConfigs);
-        const receiver = pickRandomReceiver(colorConfigs, giver);
-        const color = giver.removeColor();
-        receiver.addColor(color);
-        console.log("===================")
-        for (let shuffle of colorConfigs) {
-            console.log(`After shuffle ${i}: ${shuffle.getContent()}`)
+        if (giver != FAIL){
+            const receiver = pickRandomReceiver(colorConfigs, giver);
+            const color = giver.removeColor();
+            receiver.addColor(color);
+            //console.log("===================")
+            // for (let shuffle of colorConfigs) {
+            //     console.log(`After shuffle ${i}: ${shuffle.getContent()}`)
+            // }
+            // console.log("==================")
         }
-        console.log("==================")
     }
 
     let currentCountEmpty = countEmptyBeakers(colorConfigs)
@@ -226,12 +238,46 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
     }
 
     colorConfigs = colorConfigs.map((el) => el.getContent());
-
-    console.log("Color configs: ", colorConfigs)
+    //console.log("Color configs: ", colorConfigs)
 
     return moveEmptyToEnd(colorConfigs, countEmpty);
 }
 
+function calculateHeuristicPaper(colors){
+    let heuristic = 0;
+
+    for (let bottle of colors){
+        const uniqueColors = new Set(bottle).size
+        if (!(uniqueColors == 1 || uniqueColors == 2)){
+            heuristic += uniqueColors;
+        }
+    }
+    return heuristic;
+
+}
+
+function calculateHeuristic(bottles){
+    let heuristic = 0;
+    for (let bottle of bottles){
+        const uniqueColors = new Set(bottle).size
+        if (uniqueColors >= 2) {
+            if (bottle[0] != bottle[1] && bottle[2] != bottle[3] && bottle[1] != bottle[2]){
+                heuristic++;
+            } 
+        }
+    }
+    return heuristic;
+}
+
+function meetsHeuristic(colors, mode){
+    const value = calculateHeuristic(colors)
+    const paperHeuristic = calculateHeuristicPaper(colors)
+    console.log("Mode: ", mode, "Heuristic: (custom)", value, "Heuristic (paper): ", paperHeuristic);
+
+    return true
+    
+
+}
 
 
 /**
@@ -242,13 +288,16 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
 function generateLevels(numLevels, mode) {
     function generate(genColors, countEmpty){
         for (let i = 0; i < numLevels; i++){
-            const colorConfigs = generateColorConfig(genColors, countEmpty, 150)
-
-            fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/" + mode + "Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
-                if (err){
-                    console.error(err)
-                }
-            })
+            const colorConfigs = generateColorConfig(genColors, countEmpty, 50)
+            if (meetsHeuristic(colorConfigs, mode)){
+                fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/" + mode + "Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
+                    if (err){
+                        console.error(err)
+                    }
+                })
+            } else {
+                i--;
+            }
         }
     }
 
@@ -271,6 +320,6 @@ function generateLevels(numLevels, mode) {
 
 }
 
-//generateLevels(10, modes.easy);
-//generateLevels(10, modes.medium);
-generateLevels(10, modes.hard);
+generateLevels(10, modes.easy);
+generateLevels(10, modes.medium);
+generateLevels(11, modes.hard);
