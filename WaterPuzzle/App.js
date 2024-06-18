@@ -5,6 +5,8 @@ import { useFonts, VT323_400Regular} from "@expo-google-fonts/vt323";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useWindowDimensions } from 'react-native';
 
+import Levels from "./levels/Levels.json"
+
 import WaterFlask from './components/WaterFlask';
 import TopMenu from './components/TopMenu';
 import WinMenu from './components/WinMenu';
@@ -211,7 +213,7 @@ const getLevel = async () => {
  * @returns 
  */
 function getLevelData(level) {
-  return require(`./levels/Level ${level}.json`)
+  return Levels[level]
 
 }
 
@@ -320,7 +322,7 @@ export default function App() {
 
   return (
     <View>
-      <StatusBar />
+      <StatusBar hidden/>
       <TopMenu 
         onBackClick={(e) => {
           setColorConfigs(undoMove(colorConfigs, moveHistory))
@@ -406,8 +408,7 @@ export default function App() {
 const styles = StyleSheet.create({
   generalText: {
     color: "#472836",
-    fontFamily: 'VT323_400Regular',
-    fontSize: "30px"
+    fontFamily: 'VT323_400Regular'
   },
   winText: {
     position: "absolute",

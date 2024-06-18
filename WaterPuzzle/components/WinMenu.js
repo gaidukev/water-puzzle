@@ -7,8 +7,9 @@ export default function WinMenu({ textStyles, onNext }) {
     const leftX = (useWindowDimensions().width - menuWidth) / 2
     const heightY = (useWindowDimensions().height - menuHeight) / 2
 
+
     return <View style={[styles.menu, {left: leftX, top: heightY}]}>
-        <Text style={textStyles}>You won!</Text>
+        <Text style={[textStyles, {fontSize: 30}]}>You won!</Text>
         <Pressable onPress={onNext}>
             <View style={styles.buttonViewStyle}>
                 <Image 
@@ -17,12 +18,13 @@ export default function WinMenu({ textStyles, onNext }) {
                 <Text style={[textStyles, styles.buttonText]}>Next Level</Text>
             </View>
         </Pressable>
-    </View>
+    </View>    
 }
 const styles = StyleSheet.create({
     buttonText: {
         color: "white", 
-        position: 'absolute'
+        position: 'absolute',
+        fontSize: 25
     },
     buttonViewStyle: {
         display: 'flex',

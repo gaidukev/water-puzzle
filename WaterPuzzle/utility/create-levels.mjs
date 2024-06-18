@@ -241,15 +241,18 @@ function generateColorConfig(colors, countEmpty, numberOfShuffles){
  */
 function generateLevels(lowest, numLevels, mode) {
     function generate(genColors, countEmpty){
+        let levels = []
         for (let i = lowest; i < numLevels + lowest; i++){
             const colorConfigs = generateColorConfig(genColors, countEmpty, 150)
-
-            fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
-                if (err){
-                    console.error(err)
-                }
-            })
+            levels.push(colorConfigs)
+            // fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/Level " + i.toString() + ".json", JSON.stringify(colorConfigs), function(err) {
+            //     if (err){
+            //         console.error(err)
+            //     }
+            // })
         }
+
+        return levels
     }
 
     let colors;
@@ -267,10 +270,17 @@ function generateLevels(lowest, numLevels, mode) {
         countEmpty = 1
     }
 
-    generate(colors, countEmpty)    
+    return generate(colors, countEmpty)    
 
 }
 
-generateLevels(0, 10, modes.easy);
-generateLevels(10, 30, modes.hard);
-generateLevels(30, 45, modes.medium);
+let levels = []
+levels = levels.concat(generateLevels(0, 10, modes.easy));
+levels = levels.concat(generateLevels(10, 30, modes.hard));
+levels = levels.concat(generateLevels(30, 45, modes.medium));
+console.log(levels)
+fs.writeFile("C:/Users/mgaid.LAPTOP-FU341HDA/OneDrive/Documents/GitHub/water-puzzle2/water-puzzle/WaterPuzzle/levels/Levels.json", JSON.stringify(levels), function(err) {
+    if (err){
+        console.error(err)
+    }
+})

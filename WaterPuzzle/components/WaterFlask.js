@@ -1,5 +1,26 @@
 import React, { useEffect, useRef } from 'react';
 import {StyleSheet, View, Text, Image, Animated, Easing, useAnimatedValue} from 'react-native';
+const images = {
+    "#2E6171-bottom": require("../assets/flask-art/#2E6171-bottom.png"),
+    "#2E6171-middle": require("../assets/flask-art/#2E6171-middle.png"),
+    "#189ED8-bottom": require("../assets/flask-art/#189ED8-bottom.png"),
+    "#189ED8-middle": require("../assets/flask-art/#189ED8-middle.png"),
+    "#610B5D-bottom": require("../assets/flask-art/#610B5D-bottom.png"),
+    "#610B5D-middle": require("../assets/flask-art/#610B5D-middle.png"),
+    "#484541-bottom": require("../assets/flask-art/#484541-bottom.png"),
+    "#484541-middle": require("../assets/flask-art/#484541-middle.png"),
+    "#D21427-bottom": require("../assets/flask-art/#D21427-bottom.png"),
+    "#D21427-middle": require("../assets/flask-art/#D21427-middle.png"),
+    "#EF5D70-bottom": require("../assets/flask-art/#EF5D70-bottom.png"),
+    "#EF5D70-middle": require("../assets/flask-art/#EF5D70-middle.png"),
+    "#FF9200-bottom": require("../assets/flask-art/#FF9200-bottom.png"),
+    "#FF9200-middle": require("../assets/flask-art/#FF9200-middle.png"),
+    "#FFE593-bottom": require("../assets/flask-art/#FFE593-bottom.png"),
+    "#FFE593-middle": require("../assets/flask-art/#FFE593-middle.png"),
+    "empty-middle": require("../assets/flask-art/empty-middle.png"),
+    "empty-bottom": require("../assets/flask-art/empty-bottom.png")
+}
+
 
 export default function WaterFlask({ isSelected, colors }){
     //const vialStyle = isSelected ? [styles.vial, styles.highlighted] : [styles.vial]
@@ -25,16 +46,16 @@ export default function WaterFlask({ isSelected, colors }){
                 source={require(`../assets/flask-art/flask-top.png`)} />
             <Image 
                 style={[styles.image]}
-                source={require(`../assets/flask-art/${img0}.png`)} />
+                source={images[img0]} />
             <Image 
                 style={[styles.image]}
-                source={require(`../assets/flask-art/${img1}.png`)} />
+                source={images[img1]} />
             <Image 
                 style={[styles.image]}
-                source={require(`../assets/flask-art/${img2}.png`)} />
+                source={images[img2]} />
             <Image 
                 style={[styles.image]}
-                source={require(`../assets/flask-art/${img3}.png`)} />
+                source={images[img3]} />
         </Animated.View>
     )
 
