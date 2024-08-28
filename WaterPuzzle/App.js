@@ -13,11 +13,6 @@ import WinMenu from './components/WinMenu';
 
 const memoryKey = "level"
 
-/**
- * 
- * @param {*} flaskColors 
- * @returns 
- */
 function getTopMostColor(flaskColors){
   for (let i = 0; i < flaskColors.length; i++){
     if (flaskColors[i] != ""){
@@ -27,11 +22,6 @@ function getTopMostColor(flaskColors){
   return ""
 }
 
-/**
- * 
- * @param {*} flaskColors 
- * @returns 
- */
 function getTopMostColorIndex(flaskColors) {
   for (let i = 0; i < flaskColors.length; i++) {
     if (flaskColors[i] != "") {
@@ -41,11 +31,6 @@ function getTopMostColorIndex(flaskColors) {
   return -1
   } 
 
-/**
- * 
- * @param {*} flaskColors 
- * @returns 
- */
 function getLowestAvailableSpot(flaskColors) {
   for (let i = 3; i >= 0; i--){
     if (flaskColors[i] == "") {
@@ -55,11 +40,6 @@ function getLowestAvailableSpot(flaskColors) {
   return -1
 }
 
-/**
- * 
- * @param {*} colors 
- * @returns 
- */
 function hasSpace(colors) {
   if (colors[0] == ""){
     return true
@@ -67,12 +47,6 @@ function hasSpace(colors) {
   return false
 }
 
-/**
- * 
- * @param {*} receiverFlask 
- * @param {*} giverFlask 
- * @returns 
- */
 function isTransferrable(receiverFlask, giverFlask){
   const topColorReceiver = getTopMostColor(receiverFlask);
   const topColorGiver = getTopMostColor(giverFlask);
@@ -86,43 +60,18 @@ function isTransferrable(receiverFlask, giverFlask){
   }
 }
 
-/**
- * 
- * @param {*} currentIndex 
- * @param {*} giverIndex 
- * @returns 
- */
 function isGiverFlask(currentIndex, giverIndex){
   return currentIndex == giverIndex
 }
 
-/**
- * 
- * @param {*} currentIndex 
- * @param {*} receiverIndex 
- * @returns 
- */
 function isReceiverFlask(currentIndex, receiverIndex){
   return receiverIndex == currentIndex
 }
 
-/**
- * 
- * @param {*} selectedVialIndex 
- * @param {*} currentItemContents 
- * @param {*} giverIndex 
- * @returns 
- */
 function isValidTransfer(selectedVialIndex, currentItemContents, giverIndex){
   return selectedVialIndex != -1 && isTransferrable(currentItemContents, giverIndex)
 }
 
-/**
- * 
- * @param {*} colorArray 
- * @param {*} numberColorsTransferred 
- * @returns 
- */
 function getGiverBeakerColors(colorArray, numberColorsTransferred){
   const topMostColorIndex = getTopMostColorIndex(colorArray)
 
@@ -136,36 +85,15 @@ function getGiverBeakerColors(colorArray, numberColorsTransferred){
   })
 }
 
-/**
- * 
- * @param {*} currentIndex 
- * @param {*} lowestAvailable 
- * @param {*} numberColorsTransferred 
- * @returns 
- */
 function satisfiesLow(currentIndex, lowestAvailable, numberColorsTransferred){
   return currentIndex <= lowestAvailable
 }
 
-/**
- * 
- * @param {*} currentIndex 
- * @param {*} lowestAvailable 
- * @param {*} numberColorsTransferred 
- * @returns 
- */
 function satisfiesHigh(currentIndex, lowestAvailable, numberColorsTransferred){
   const upperBound = lowestAvailable - numberColorsTransferred + 1;
   return currentIndex >= upperBound;
 }
 
-/**
- * 
- * @param {*} colorArray 
- * @param {*} giverColor 
- * @param {*} numberColorsTransferred 
- * @returns 
- */
 function getReceiverBeakerColors(colorArray, giverColor, numberColorsTransferred){
   const lowestAvailableSpotIndex = getLowestAvailableSpot(colorArray)
   return colorArray.map((el, colorIndex) => {
@@ -178,10 +106,6 @@ function getReceiverBeakerColors(colorArray, giverColor, numberColorsTransferred
 }
 
 
-/**
- * 
- * @param {*} currentLevel 
- */
 const storeLevel = async (currentLevel) => {
   try {
     await AsyncStorage.setItem(memoryKey, currentLevel);
@@ -190,10 +114,6 @@ const storeLevel = async (currentLevel) => {
   }
 }
 
-/**
- * 
- * @returns 
- */
 const getLevel = async () => {
   try {
     const level = await AsyncStorage.getItem(memoryKey);
@@ -207,21 +127,11 @@ const getLevel = async () => {
   }
 }
 
-/**
- * 
- * @param {*} level 
- * @returns 
- */
 function getLevelData(level) {
   return Levels[level]
 
 }
 
-/**
- * 
- * @param {*} colors 
- * @returns 
- */
 function countTopColor(colors){
   let topColor; 
   let finished = false;
@@ -239,11 +149,6 @@ function countTopColor(colors){
   return count;
 }
 
-/**
- * 
- * @param {*} colors 
- * @returns 
- */
 function countEmpty(colors){
   let count = 0;
   for (let i = 0; i < 4; i++){
@@ -254,11 +159,6 @@ function countEmpty(colors){
   return count;
 }
 
-/**
- * 
- * @param {*} colorConfigs 
- * @returns 
- */
 function checkWin(colorConfigs){
   for(let config of colorConfigs){
     const topElement = config[0]
@@ -300,8 +200,8 @@ function undoMove(colorConfigs, moveHistory){
 export default function App() {
   let [fontsLoaded] = useFonts({VT323_400Regular});
   //AsyncStorage.removeItem(memoryKey);
-  // AsyncStorage.removeItem(modes.medium);
-  // AsyncStorage.setItem(memoryKey, 14);
+  //AsyncStorage.removeItem(modes.medium);
+  //AsyncStorage.setItem(memoryKey, 14);
 
   const backgroundColor = "#ebf2ff"
 
