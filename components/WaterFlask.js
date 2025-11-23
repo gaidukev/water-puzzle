@@ -1,31 +1,43 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Animated, Easing, Image, StyleSheet, View } from 'react-native';
 const images = {
-    "#2E6171-bottom": require("../assets/flask-art/bottom-mask.png"),//require("../assets/flask-art/2E6171-bottom.png"),
-    "#2E6171-middle": require("../assets/flask-art/middle-mask.png"),//require("../assets/flask-art/2E6171-middle.png"),
-    "#189ED8-bottom": require("../assets/flask-art/bottom-mask.png"),//require("../assets/flask-art/189ED8-bottom.png"),
-    "#189ED8-middle": require("../assets/flask-art/middle-mask.png"),//require("../assets/flask-art/189ED8-middle.png"),
-    "#610B5D-bottom": require("../assets/flask-art/bottom-mask.png"),//require("../assets/flask-art/610B5D-bottom.png"),
-    "#610B5D-middle": require("../assets/flask-art/middle-mask.png"),//require("../assets/flask-art/610B5D-middle.png"),
-    "#484541-bottom": require("../assets/flask-art/bottom-mask.png"),//require("../assets/flask-art/484541-bottom.png"),
-    "#484541-middle": require("../assets/flask-art/middle-mask.png"),//require("../assets/flask-art/484541-middle.png"),
-    "#D21427-bottom": require("../assets/flask-art/bottom-mask.png"),//require("../assets/flask-art/D21427-bottom.png"),
-    "#D21427-middle": require("../assets/flask-art/middle-mask.png"),//require("../assets/flask-art/D21427-middle.png"),
-    "#EF5D70-bottom": require("../assets/flask-art/bottom-mask.png"),//require("../assets/flask-art/EF5D70-bottom.png"),
-    "#EF5D70-middle": require("../assets/flask-art/middle-mask.png"),//require("../assets/flask-art/EF5D70-middle.png"),
-    "#FF9200-bottom": require("../assets/flask-art/bottom-mask.png"),//require("../assets/flask-art/FF9200-bottom.png"),
-    "#FF9200-middle": require("../assets/flask-art/middle-mask.png"),//require("../assets/flask-art/FF9200-middle.png"),
-    "#FFE593-bottom": require("../assets/flask-art/bottom-mask.png"),//require("../assets/flask-art/FFE593-bottom.png"),
-    "#FFE593-middle": require("../assets/flask-art/middle-mask.png"),//require("../assets/flask-art/FFE593-middle.png"),
+    "#2E6171-bottom": require("../assets/flask-art/bottom-mask.png"),
+    "#2E6171-middle": require("../assets/flask-art/middle-mask.png"),
+    "#189ED8-bottom": require("../assets/flask-art/bottom-mask.png"),
+    "#189ED8-middle": require("../assets/flask-art/middle-mask.png"),
+    "#610B5D-bottom": require("../assets/flask-art/bottom-mask.png"),
+    "#610B5D-middle": require("../assets/flask-art/middle-mask.png"),
+    "#484541-bottom": require("../assets/flask-art/bottom-mask.png"),
+    "#484541-middle": require("../assets/flask-art/middle-mask.png"),
+    "#D21427-bottom": require("../assets/flask-art/bottom-mask.png"),
+    "#D21427-middle": require("../assets/flask-art/middle-mask.png"),
+    "#EF5D70-bottom": require("../assets/flask-art/bottom-mask.png"),
+    "#EF5D70-middle": require("../assets/flask-art/middle-mask.png"),
+    "#FF9200-bottom": require("../assets/flask-art/bottom-mask.png"),
+    "#FF9200-middle": require("../assets/flask-art/middle-mask.png"),
+    "#FFE593-bottom": require("../assets/flask-art/bottom-mask.png"),
+    "#FFE593-middle": require("../assets/flask-art/middle-mask.png"),
     "empty-middle": require("../assets/flask-art/empty-middle.png"),
     "empty-bottom": require("../assets/flask-art/empty-bottom.png")
 }
+
+const animationFrames = [require("../assets/flask-art/flask-middle-tap-animation/frame_0.png"), 
+    require("../assets/flask-art/flask-middle-tap-animation/frame_1.png"), 
+    require("../assets/flask-art/flask-middle-tap-animation/frame_2.png"),
+    require("../assets/flask-art/flask-middle-tap-animation/frame_3.png"),
+    require("../assets/flask-art/flask-middle-tap-animation/frame_4.png"),
+    require("../assets/flask-art/flask-middle-tap-animation/frame_5.png"), 
+    require("../assets/flask-art/flask-middle-tap-animation/frame_6.png"), 
+    require("../assets/flask-art/flask-middle-tap-animation/frame_7.png")]
 
 
 
 export default function WaterFlask({ isSelected, colors }){
     //const vialStyle = isSelected ? [styles.vial, styles.highlighted] : [styles.vial]
+    const [currentFrame, setCurrentFrame] = useState(null);
+
     const marginTopTest = useRef(new Animated.Value(0)).current;
+
     useEffect(() => {
         Animated.timing(marginTopTest, {
             toValue: isSelected ? 0 : 20,
@@ -33,22 +45,68 @@ export default function WaterFlask({ isSelected, colors }){
             easing: Easing.ease,
             useNativeDriver: false,
         }).start();
+
+        let frame = 0;
+        setCurrentFrame(0);
+        if (!isSelected) return;
+            
+        const id = setInterval(() => {
+            frame++;
+
+            //setCurrentFrame((i) => ((i || 0) + 1) % animationFrames.length);
+            //console.log("current frame: ", currentFrame);
+            if (frame >= animationFrames.length ) 
+            {
+                clearInterval(id);
+                console.log("clearing interval");
+                setCurrentFrame(null);
+            } else {
+                setCurrentFrame((frame) % animationFrames.length);
+            }
+        }, 75);
     }, [isSelected])
 
     let img0 = colors[0] == "" ? "empty-middle" : colors[0] + "-middle"
     let img1 = colors[1] == "" ? "empty-middle" : colors[1] + "-middle"
     let img2 = colors[2] == "" ? "empty-middle" : colors[2] + "-middle"
     let img3 = colors[3] == "" ? "empty-bottom" : colors[3] + "-bottom"
+    console.log("current frame: ", currentFrame);
 
     return(
         <Animated.View style={[{margin: 5}, {marginTop: marginTopTest}]}>        
             <Image 
                 style={[styles.image]}
                 source={require(`../assets/flask-art/flask-top.png`)} />
+            <View style={[styles.hide]}>
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationFrames[0]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationFrames[1]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationFrames[2]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationFrames[3]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationFrames[4]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationFrames[5]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationFrames[6]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationFrames[7]} />
+            </View>
             <View style={[styles.flaskSlot]}>
                 <Image 
                     style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[0]}]}
-                    source={images[img0]} />
+                    source={currentFrame ? animationFrames[currentFrame] : images[img0]} />
                 <Image 
                     style={[styles.image, StyleSheet.absoluteFill]}
                     source={images["empty-middle"]} />
@@ -83,6 +141,10 @@ export default function WaterFlask({ isSelected, colors }){
 }
 
 const styles = StyleSheet.create({
+
+    hide: {
+        display: "none"
+    },
 
     flaskSlot: {
         height: 30,
