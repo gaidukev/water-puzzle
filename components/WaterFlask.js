@@ -30,6 +30,15 @@ const animationFrames = [require("../assets/flask-art/flask-middle-tap-animation
     require("../assets/flask-art/flask-middle-tap-animation/frame_6.png"), 
     require("../assets/flask-art/flask-middle-tap-animation/frame_7.png")]
 
+const animationBottomFrames = [require("../assets/flask-art/flask-bottom-tap-animation/frame_0.png"), 
+    require("../assets/flask-art/flask-bottom-tap-animation/frame_1.png"), 
+    require("../assets/flask-art/flask-bottom-tap-animation/frame_2.png"),
+    require("../assets/flask-art/flask-bottom-tap-animation/frame_3.png"),
+    require("../assets/flask-art/flask-bottom-tap-animation/frame_4.png"),
+    require("../assets/flask-art/flask-bottom-tap-animation/frame_5.png"),
+    require("../assets/flask-art/flask-bottom-tap-animation/frame_6.png"),
+    require("../assets/flask-art/flask-bottom-tap-animation/frame_7.png")
+]
 
 
 export default function WaterFlask({ isSelected, colors }){
@@ -99,6 +108,30 @@ export default function WaterFlask({ isSelected, colors }){
                 <Image 
                     style={[styles.image, StyleSheet.absoluteFill]}
                     source={animationFrames[7]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationBottomFrames[0]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationBottomFrames[1]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationBottomFrames[2]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationBottomFrames[3]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationBottomFrames[4]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationBottomFrames[5]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationBottomFrames[6]} />
+                <Image 
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={animationBottomFrames[7]} />
             </View>
             <View style={[styles.flaskSlot]}>
                 {colors[0] &&                 
@@ -134,7 +167,7 @@ export default function WaterFlask({ isSelected, colors }){
                 {colors[3] &&
                     <Image 
                         style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[3]}]}
-                        source={images[img3]} />
+                        source={currentFrame && lowestColorIndex == 3 ? animationBottomFrames[currentFrame] : images[img3]} />
                 }
                 <Image 
                     style={[styles.image, StyleSheet.absoluteFill]}
