@@ -33,13 +33,14 @@ const animationFrames = [require("../assets/flask-art/flask-middle-tap-animation
 
 
 export default function WaterFlask({ isSelected, colors }){
-    //const vialStyle = isSelected ? [styles.vial, styles.highlighted] : [styles.vial]
     const [currentFrame, setCurrentFrame] = useState(null);
+    const flaskAnimation = useRef(new Animated.Value(0)).current;
 
-    const marginTopTest = useRef(new Animated.Value(0)).current;
+    const lowestColorIndex = colors.findIndex(color => color != null && color != "" && color != undefined);
+
 
     useEffect(() => {
-        Animated.timing(marginTopTest, {
+        Animated.timing(flaskAnimation, {
             toValue: isSelected ? 0 : 20,
             duration: 50,
             easing: Easing.ease,
@@ -53,27 +54,23 @@ export default function WaterFlask({ isSelected, colors }){
         const id = setInterval(() => {
             frame++;
 
-            //setCurrentFrame((i) => ((i || 0) + 1) % animationFrames.length);
-            //console.log("current frame: ", currentFrame);
             if (frame >= animationFrames.length ) 
             {
                 clearInterval(id);
-                console.log("clearing interval");
                 setCurrentFrame(null);
             } else {
                 setCurrentFrame((frame) % animationFrames.length);
             }
-        }, 75);
+        }, 30);
     }, [isSelected])
 
-    let img0 = colors[0] == "" ? "empty-middle" : colors[0] + "-middle"
-    let img1 = colors[1] == "" ? "empty-middle" : colors[1] + "-middle"
-    let img2 = colors[2] == "" ? "empty-middle" : colors[2] + "-middle"
-    let img3 = colors[3] == "" ? "empty-bottom" : colors[3] + "-bottom"
-    console.log("current frame: ", currentFrame);
+    let img0 = colors[0] + "-middle"
+    let img1 = colors[1] + "-middle"
+    let img2 = colors[2] + "-middle"
+    let img3 = colors[3] + "-bottom"
 
     return(
-        <Animated.View style={[{margin: 5}, {marginTop: marginTopTest}]}>        
+        <Animated.View style={[{margin: 5}, {marginTop: flaskAnimation}]}>        
             <Image 
                 style={[styles.image]}
                 source={require(`../assets/flask-art/flask-top.png`)} />
@@ -104,33 +101,41 @@ export default function WaterFlask({ isSelected, colors }){
                     source={animationFrames[7]} />
             </View>
             <View style={[styles.flaskSlot]}>
-                <Image 
-                    style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[0]}]}
-                    source={currentFrame ? animationFrames[currentFrame] : images[img0]} />
-                <Image 
-                    style={[styles.image, StyleSheet.absoluteFill]}
-                    source={images["empty-middle"]} />
-            </View>
-            <View style={[styles.flaskSlot]}>
-                <Image 
-                    style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[1]}]}
-                    source={images[img1]} />
+                {colors[0] &&                 
+                    <Image 
+                        style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[0]}]}
+                        source={currentFrame && lowestColorIndex == 0 ? animationFrames[currentFrame] : images[img0]} />
+                }
                 <Image 
                     style={[styles.image, StyleSheet.absoluteFill]}
                     source={images["empty-middle"]} />
             </View>
             <View style={[styles.flaskSlot]}>
-                <Image 
-                    style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[2]}]}
-                    source={images[img2]} />
+                {colors[1] && 
+                    <Image 
+                        style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[1]}]}
+                        source={currentFrame && lowestColorIndex == 1 ? animationFrames[currentFrame] : images[img1]} />
+                }
                 <Image 
                     style={[styles.image, StyleSheet.absoluteFill]}
                     source={images["empty-middle"]} />
             </View>
             <View style={[styles.flaskSlot]}>
+                {colors[2] &&
+                    <Image 
+                        style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[2]}]}
+                        source={currentFrame && lowestColorIndex == 2 ? animationFrames[currentFrame] : images[img2]} />
+                }
                 <Image 
-                    style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[3]}]}
-                    source={images[img3]} />
+                    style={[styles.image, StyleSheet.absoluteFill]}
+                    source={images["empty-middle"]} />
+            </View>
+            <View style={[styles.flaskSlot]}>
+                {colors[3] &&
+                    <Image 
+                        style={[styles.image, StyleSheet.absoluteFill, styles.imageSize, {tintColor: colors[3]}]}
+                        source={images[img3]} />
+                }
                 <Image 
                     style={[styles.image, StyleSheet.absoluteFill]}
                     source={images["empty-bottom"]} />
